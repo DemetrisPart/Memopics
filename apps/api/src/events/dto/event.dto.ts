@@ -1,0 +1,75 @@
+import {
+  IsDateString,
+  IsInt,
+  IsOptional,
+  IsString,
+  MaxLength,
+  Min,
+  MinLength,
+} from "class-validator";
+
+export class CreateEventDto {
+  @IsString()
+  @MinLength(1)
+  @MaxLength(120)
+  brideName!: string;
+
+  @IsString()
+  @MinLength(1)
+  @MaxLength(120)
+  groomName!: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(200)
+  title?: string;
+
+  @IsDateString()
+  eventDate!: string;
+
+  @IsString()
+  @MinLength(3)
+  @MaxLength(60)
+  slug!: string;
+}
+
+export class UpdateEventDto {
+  @IsOptional()
+  @IsString()
+  @MinLength(1)
+  @MaxLength(120)
+  brideName?: string;
+
+  @IsOptional()
+  @IsString()
+  @MinLength(1)
+  @MaxLength(120)
+  groomName?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(200)
+  title?: string;
+
+  @IsOptional()
+  @IsDateString()
+  eventDate?: string;
+}
+
+export class CoverUploadInitDto {
+  @IsString()
+  contentType!: string;
+
+  @IsInt()
+  @Min(1)
+  contentLength!: number;
+
+  @IsOptional()
+  @IsString()
+  fileName?: string;
+}
+
+export class CoverUploadCompleteDto {
+  @IsString()
+  mediaId!: string;
+}

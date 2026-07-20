@@ -1,0 +1,27 @@
+{
+  "name": "memopics",
+  "private": true,
+  "scripts": {
+    "dev": "turbo dev",
+    "build": "turbo build",
+    "lint": "turbo lint",
+    "typecheck": "turbo typecheck",
+    "db:generate": "pnpm --filter @memopics/database generate",
+    "db:migrate": "pnpm --filter @memopics/database migrate",
+    "db:migrate:deploy": "pnpm --filter @memopics/database migrate:deploy",
+    "db:push": "pnpm --filter @memopics/database push",
+    "db:test": "pnpm --filter @memopics/database test:connection",
+    "db:studio": "pnpm --filter @memopics/database studio",
+    "docker:up": "docker compose -f docker/docker-compose.yml up -d",
+    "docker:down": "docker compose -f docker/docker-compose.yml down",
+    "worker:dev": "pnpm --filter @memopics/worker-media dev"
+  },
+  "devDependencies": {
+    "turbo": "^2.4.4",
+    "typescript": "^5.8.2"
+  },
+  "packageManager": "pnpm@9.15.4",
+  "engines": {
+    "node": ">=20"
+  }
+}
