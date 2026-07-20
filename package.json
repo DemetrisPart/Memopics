@@ -17,6 +17,7 @@
     "worker:dev": "pnpm --filter @memopics/worker-media dev"
   },
   "devDependencies": {
+    "@types/node": "^22.13.10",
     "turbo": "^2.4.4",
     "typescript": "^5.8.2"
   },
