@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { X } from "lucide-react";
@@ -227,46 +226,53 @@ export function GalleryPageClient({ slug, event }: GalleryPageClientProps) {
               {items.map((item, index) => (
                 <div
                   key={item.id}
-                  className="relative aspect-square overflow-hidden rounded-lg bg-ivory-100"
+                  className="relative min-w-0 overflow-hidden rounded-lg bg-ivory-100"
                 >
-                  <button
-                    type="button"
-                    onClick={() => setLightboxIndex(index)}
-                    className="absolute inset-0 size-full"
-                    aria-label="View photo"
-                  >
+                  <div className="relative aspect-square w-full">
                     {galleryThumbUrl(item) ? (
-                      <Image
-                        src={galleryThumbUrl(item)!}
-                        alt=""
-                        fill
-                        className="object-cover"
-                        sizes="33vw"
-                        loading="lazy"
-                        unoptimized
-                      />
+                      <>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={galleryThumbUrl(item)!}
+                          alt=""
+                          className="absolute inset-0 size-full object-cover"
+                          loading="lazy"
+                          decoding="async"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setLightboxIndex(index)}
+                          className="absolute inset-0 z-[1]"
+                          aria-label="View photo"
+                        />
+                      </>
                     ) : (
-                      <div className="flex h-full items-center justify-center text-xs text-stone-400">
+                      <button
+                        type="button"
+                        onClick={() => setLightboxIndex(index)}
+                        className="absolute inset-0 flex items-center justify-center text-xs text-stone-400"
+                        aria-label="View photo"
+                      >
                         …
-                      </div>
+                      </button>
                     )}
-                  </button>
-                  {item.canDelete ? (
-                    <button
-                      type="button"
-                      onClick={(event) => void handleGridDelete(event, item)}
-                      disabled={deletingId === item.id}
-                      className="absolute right-1 top-1 z-10 flex size-7 items-center justify-center rounded-full bg-charcoal-900/75 text-white disabled:opacity-50"
-                      aria-label="Delete photo"
-                    >
-                      <X className="size-3.5" aria-hidden />
-                    </button>
-                  ) : null}
-                  {item.guestLabel ? (
-                    <span className="pointer-events-none absolute inset-x-0 bottom-0 truncate bg-charcoal-900/60 px-1 py-0.5 text-[10px] text-ivory-50">
-                      {item.guestLabel}
-                    </span>
-                  ) : null}
+                    {item.canDelete ? (
+                      <button
+                        type="button"
+                        onClick={(event) => void handleGridDelete(event, item)}
+                        disabled={deletingId === item.id}
+                        className="absolute right-1 top-1 z-[2] flex size-7 items-center justify-center rounded-full bg-charcoal-900/75 text-white disabled:opacity-50"
+                        aria-label="Delete photo"
+                      >
+                        <X className="size-3.5" aria-hidden />
+                      </button>
+                    ) : null}
+                    {item.guestLabel ? (
+                      <span className="pointer-events-none absolute inset-x-0 bottom-0 z-[2] truncate bg-charcoal-900/60 px-1 py-0.5 text-[10px] text-ivory-50">
+                        {item.guestLabel}
+                      </span>
+                    ) : null}
+                  </div>
                 </div>
               ))}
             </div>
