@@ -83,9 +83,9 @@ export function buildEventTitle(
   const bride = brideName?.trim();
   const groom = groomName?.trim();
 
-  if (bride && groom) return `${bride} & ${groom}`;
-  if (bride) return bride;
+  if (groom && bride) return `${groom} & ${bride}`;
   if (groom) return groom;
+  if (bride) return bride;
   return fallback;
 }
 

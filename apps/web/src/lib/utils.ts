@@ -42,6 +42,20 @@ export function formatEventDate(isoDate: string): string {
   });
 }
 
+export function formatCoupleNames(
+  groomName: string | null | undefined,
+  brideName: string | null | undefined,
+  fallback = "Our Event",
+): string {
+  const groom = groomName?.trim();
+  const bride = brideName?.trim();
+
+  if (groom && bride) return `${groom} & ${bride}`;
+  if (groom) return groom;
+  if (bride) return bride;
+  return fallback;
+}
+
 export function formatGuestName(firstName: string, lastName?: string | null): string {
   if (lastName?.trim()) {
     return `${firstName} ${lastName.trim()}`;

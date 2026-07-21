@@ -12,6 +12,8 @@ export type PublicEvent = {
   storageLimitBytes: string;
   storageUsedPercent: number;
   coverImageUrl: string | null;
+  coverImageUrlLan?: string | null;
+  coverImageUrlPublic?: string | null;
 };
 
 export type GuestSessionStatus =
@@ -70,6 +72,8 @@ export type UploadCompleteResponse = {
 export type PublicEventQr = {
   slug: string;
   title: string;
+  brideName: string | null;
+  groomName: string | null;
   eventDate: string;
   eventUrl: string;
   qrCodePngBase64: string;

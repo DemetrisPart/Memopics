@@ -48,8 +48,8 @@ describe("validateEventSlug", () => {
 });
 
 describe("buildEventTitle", () => {
-  it("joins bride and groom names", () => {
-    assert.equal(buildEventTitle("Daniella", "Demetris"), "Daniella & Demetris");
+  it("joins groom and bride names", () => {
+    assert.equal(buildEventTitle("Daniella", "Demetris"), "Demetris & Daniella");
   });
 });
 

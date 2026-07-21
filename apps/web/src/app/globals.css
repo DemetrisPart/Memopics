@@ -49,6 +49,10 @@
     box-shadow: var(--shadow-lift);
   }
 
+  .font-couple {
+    font-family: var(--font-couple), Georgia, "Times New Roman", serif;
+  }
+
   .gold-accent-line {
     background: linear-gradient(
       90deg,

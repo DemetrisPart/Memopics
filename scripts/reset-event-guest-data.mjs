@@ -35,8 +35,8 @@ const prisma = new PrismaClient();
 function buildEventTitle(brideName, groomName) {
   const bride = brideName?.trim();
   const groom = groomName?.trim();
-  if (bride && groom) return `${bride} & ${groom}`;
-  return bride || groom || "Our Event";
+  if (groom && bride) return `${groom} & ${bride}`;
+  return groom || bride || "Our Event";
 }
 
 try {

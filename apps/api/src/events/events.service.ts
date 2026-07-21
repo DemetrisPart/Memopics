@@ -344,6 +344,8 @@ export class EventsService {
     return {
       slug: event.slug,
       title: event.title,
+      brideName: event.brideName,
+      groomName: event.groomName,
       eventDate: event.eventDate,
       eventUrl,
       qrCodePngBase64,
@@ -380,12 +382,28 @@ export class EventsService {
     return existing !== null;
   }
 
+  private async resolveCoverImageUrls(event: EventWithCover) {
+    if (!event.coverImage) {
+      return {
+        coverImageUrl: null as string | null,
+        coverImageUrlLan: null as string | null,
+        coverImageUrlPublic: null as string | null,
+      };
+    }
+
+    const urls = await this.storage.getPresignedDownloadUrls({
+      key: event.coverImage.originalKey,
+    });
+
+    return {
+      coverImageUrl: urls.url,
+      coverImageUrlLan: urls.lanUrl ?? null,
+      coverImageUrlPublic: urls.publicUrl ?? null,
+    };
+  }
+
   private async serializePublicEvent(event: EventWithCover) {
-    const coverImageUrl = event.coverImage
-      ? await this.storage.getPresignedDownloadUrl({
-          key: event.coverImage.originalKey,
-        })
-      : null;
+    const coverUrls = await this.resolveCoverImageUrls(event);
 
     const storageUsedPercent = Number(
       (event.storageUsedBytes * BigInt(100)) / event.storageLimitBytes,
@@ -402,7 +420,7 @@ export class EventsService {
       storageUsedBytes: event.storageUsedBytes.toString(),
       storageLimitBytes: event.storageLimitBytes.toString(),
       storageUsedPercent,
-      coverImageUrl,
+      ...coverUrls,
     };
   }
 
