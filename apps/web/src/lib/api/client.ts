@@ -158,6 +158,16 @@ export async function fetchGallery(
   );
 }
 
+export async function deleteGalleryMedia(
+  slug: string,
+  mediaId: string,
+): Promise<{ deleted: true; mediaId: string }> {
+  return apiFetch<{ deleted: true; mediaId: string }>(
+    `/public/events/${encodeURIComponent(slug)}/media/${encodeURIComponent(mediaId)}`,
+    { method: "DELETE" },
+  );
+}
+
 export async function fetchMediaUrl(
   slug: string,
   mediaId: string,

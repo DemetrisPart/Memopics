@@ -77,6 +77,13 @@ Approved layout (do **not** revert without sign-off):
 - **Take a picture** → camera only (single).
 - After pick/capture → preview + **Upload** / **Cancel** (no instant upload).
 - On **Upload** confirm → immediate loading + progress bar.
+- Preview: scroll all selected photos; **×** removes one before upload.
+
+### Gallery delete (guest)
+
+- Guests may **delete their own uploads** only (`canDelete` on gallery items).
+- **×** on thumbnail or **Delete photo** in lightbox; confirm before delete.
+- Couple cannot see deleted photos; storage quota is updated.
 
 ### Limits (MVP)
 

@@ -1,5 +1,6 @@
 import {
   Controller,
+  Delete,
   Get,
   Param,
   Query,
@@ -52,5 +53,14 @@ export class GalleryController {
       guestSession,
       query.variant ?? "web",
     );
+  }
+
+  @Delete("media/:mediaId")
+  deleteMedia(
+    @Param("slug") slug: string,
+    @Param("mediaId") mediaId: string,
+    @CurrentGuestSession() guestSession: GuestSessionContext,
+  ) {
+    return this.galleryService.deleteGuestMedia(slug, mediaId, guestSession);
   }
 }

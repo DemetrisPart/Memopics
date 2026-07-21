@@ -91,7 +91,9 @@ export class GalleryService {
     const page = hasMore ? media.slice(0, limit) : media;
 
     const items = await Promise.all(
-      page.map((asset) => this.serializeGalleryItem(asset, event)),
+      page.map((asset) =>
+        this.serializeGalleryItem(asset, event, guestSession.id),
+      ),
     );
 
     const lastItem = page.at(-1);
@@ -162,6 +164,65 @@ export class GalleryService {
     };
   }
 
+  async deleteGuestMedia(
+    slug: string,
+    mediaId: string,
+    guestSession: GuestSessionContext,
+  ) {
+    const event = await this.findActiveEventBySlug(slug);
+
+    if (guestSession.eventId !== event.id) {
+      throw new NotFoundException("Event not found");
+    }
+
+    const media = await this.prisma.mediaAsset.findFirst({
+      where: {
+        id: mediaId,
+        eventId: event.id,
+        guestSessionId: guestSession.id,
+        deletedAt: null,
+        status: MediaAssetStatus.ACTIVE,
+        type: MediaAssetType.PHOTO,
+      },
+      include: { variants: true },
+    });
+
+    if (!media) {
+      throw new NotFoundException("Media not found");
+    }
+
+    const bytesToFree =
+      media.originalSizeBytes +
+      media.variants.reduce(
+        (sum, variant) => sum + variant.sizeBytes,
+        BigInt(0),
+      );
+
+    await this.prisma.$transaction(async (tx) => {
+      await tx.mediaAsset.update({
+        where: { id: media.id },
+        data: { deletedAt: new Date() },
+      });
+
+      const eventUpdate: Prisma.EventUpdateInput = {
+        storageUsedBytes: {
+          decrement: bytesToFree,
+        },
+      };
+
+      if (event.coverImageMediaId === media.id) {
+        eventUpdate.coverImage = { disconnect: true };
+      }
+
+      await tx.event.update({
+        where: { id: event.id },
+        data: eventUpdate,
+      });
+    });
+
+    return { deleted: true as const, mediaId: media.id };
+  }
+
   private buildGalleryWhere(
     eventId: string,
     privacyMode: PrivacyMode,
@@ -187,6 +248,7 @@ export class GalleryService {
   private async serializeGalleryItem(
     media: MediaWithVariants,
     event: { privacyMode: PrivacyMode; showGuestNamesPublicly: boolean },
+    viewingGuestSessionId: string,
   ) {
     const thumbVariant = media.variants.find(
       (v) => v.variant === MediaVariantType.THUMB,
@@ -208,6 +270,7 @@ export class GalleryService {
       height: media.height,
       createdAt: media.createdAt.toISOString(),
       guestLabel: this.formatGuestLabel(media, event),
+      canDelete: media.guestSessionId === viewingGuestSessionId,
     };
   }
 

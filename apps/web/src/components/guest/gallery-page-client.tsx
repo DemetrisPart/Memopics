@@ -4,9 +4,14 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { X } from "lucide-react";
 import { Lightbox } from "@/components/guest/lightbox";
 import { NameEntryModal } from "@/components/guest/name-entry-modal";
-import { checkGuestSession, fetchGallery } from "@/lib/api/client";
+import {
+  checkGuestSession,
+  deleteGalleryMedia,
+  fetchGallery,
+} from "@/lib/api/client";
 import { resolveNetworkUrl } from "@/lib/mobile-network";
 import type { GalleryItem, PrivacyMode, PublicEvent } from "@/lib/api/types";
 
@@ -47,6 +52,7 @@ export function GalleryPageClient({ slug, event }: GalleryPageClientProps) {
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const sentinelRef = useRef<HTMLDivElement>(null);
 
   const loadGallery = useCallback(
@@ -73,6 +79,49 @@ export function GalleryPageClient({ slug, event }: GalleryPageClientProps) {
     },
     [slug],
   );
+
+  const handleDeleteMedia = useCallback(
+    async (mediaId: string) => {
+      setDeletingId(mediaId);
+      try {
+        await deleteGalleryMedia(slug, mediaId);
+        setItems((prev) => {
+          const next = prev.filter((item) => item.id !== mediaId);
+          setLightboxIndex((current) => {
+            if (current === null) return null;
+            if (next.length === 0) return null;
+            return Math.min(current, next.length - 1);
+          });
+          return next;
+        });
+        setTotalCount((count) => Math.max(0, count - 1));
+        setError(null);
+      } catch (err) {
+        setError(
+          err instanceof Error ? err.message : "Could not delete photo",
+        );
+        throw err;
+      } finally {
+        setDeletingId(null);
+      }
+    },
+    [slug],
+  );
+
+  async function handleGridDelete(
+    event: React.MouseEvent,
+    item: GalleryItem,
+  ) {
+    event.stopPropagation();
+    if (!item.canDelete || deletingId) return;
+
+    const confirmed = window.confirm(
+      "Delete this photo? It will be removed from the gallery.",
+    );
+    if (!confirmed) return;
+
+    await handleDeleteMedia(item.id);
+  }
 
   useEffect(() => {
     async function verifySession() {
@@ -176,33 +225,49 @@ export function GalleryPageClient({ slug, event }: GalleryPageClientProps) {
           <>
             <div className="grid grid-cols-3 gap-1.5">
               {items.map((item, index) => (
-                <button
+                <div
                   key={item.id}
-                  type="button"
-                  onClick={() => setLightboxIndex(index)}
                   className="relative aspect-square overflow-hidden rounded-lg bg-ivory-100"
                 >
-                  {galleryThumbUrl(item) ? (
-                    <Image
-                      src={galleryThumbUrl(item)!}
-                      alt=""
-                      fill
-                      className="object-cover"
-                      sizes="33vw"
-                      loading="lazy"
-                      unoptimized
-                    />
-                  ) : (
-                    <div className="flex h-full items-center justify-center text-xs text-stone-400">
-                      …
-                    </div>
-                  )}
+                  <button
+                    type="button"
+                    onClick={() => setLightboxIndex(index)}
+                    className="absolute inset-0 size-full"
+                    aria-label="View photo"
+                  >
+                    {galleryThumbUrl(item) ? (
+                      <Image
+                        src={galleryThumbUrl(item)!}
+                        alt=""
+                        fill
+                        className="object-cover"
+                        sizes="33vw"
+                        loading="lazy"
+                        unoptimized
+                      />
+                    ) : (
+                      <div className="flex h-full items-center justify-center text-xs text-stone-400">
+                        …
+                      </div>
+                    )}
+                  </button>
+                  {item.canDelete ? (
+                    <button
+                      type="button"
+                      onClick={(event) => void handleGridDelete(event, item)}
+                      disabled={deletingId === item.id}
+                      className="absolute right-1 top-1 z-10 flex size-7 items-center justify-center rounded-full bg-charcoal-900/75 text-white disabled:opacity-50"
+                      aria-label="Delete photo"
+                    >
+                      <X className="size-3.5" aria-hidden />
+                    </button>
+                  ) : null}
                   {item.guestLabel ? (
-                    <span className="absolute inset-x-0 bottom-0 truncate bg-charcoal-900/60 px-1 py-0.5 text-[10px] text-ivory-50">
+                    <span className="pointer-events-none absolute inset-x-0 bottom-0 truncate bg-charcoal-900/60 px-1 py-0.5 text-[10px] text-ivory-50">
                       {item.guestLabel}
                     </span>
                   ) : null}
-                </button>
+                </div>
               ))}
             </div>
 
@@ -231,6 +296,7 @@ export function GalleryPageClient({ slug, event }: GalleryPageClientProps) {
           items={items}
           initialIndex={lightboxIndex}
           onClose={() => setLightboxIndex(null)}
+          onDelete={handleDeleteMedia}
         />
       ) : null}
     </div>

@@ -33,6 +33,7 @@ export type GalleryItem = {
   height: number | null;
   createdAt: string;
   guestLabel: string | null;
+  canDelete: boolean;
 };
 
 export type GalleryResponse = {
