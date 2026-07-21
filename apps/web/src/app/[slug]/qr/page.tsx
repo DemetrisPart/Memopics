@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { EventQrActions } from "@/components/guest/event-qr-actions";
 import { fetchPublicEventQr } from "@/lib/api/client";
 import { ApiError } from "@/lib/api/types";
-import { formatEventDateDots } from "@/lib/utils";
+import { formatEventDate } from "@/lib/utils";
 
 type PageProps = {
   params: Promise<{ slug: string }>;
@@ -56,7 +56,7 @@ export default async function EventQrPage({ params }: PageProps) {
             {qr.title}
           </h1>
           <p className="mt-2 text-base text-stone-400">
-            {formatEventDateDots(qr.eventDate)}
+            {formatEventDate(qr.eventDate)}
           </p>
 
           <div className="mx-auto mt-8 inline-block rounded-2xl border border-stone-200 bg-white p-4">

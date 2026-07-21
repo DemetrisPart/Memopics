@@ -33,20 +33,13 @@ export function inferPhotoContentType(file: File): string {
 }
 
 export function formatEventDate(isoDate: string): string {
-  const date = new Date(`${isoDate}T12:00:00`);
+  const dateOnly = isoDate.slice(0, 10);
+  const date = new Date(`${dateOnly}T12:00:00`);
   return date.toLocaleDateString("en-GB", {
     day: "numeric",
     month: "long",
     year: "numeric",
   });
-}
-
-/** DD.MM.YYYY — e.g. 03.10.2026 (QR print card) */
-export function formatEventDateDots(isoDate: string): string {
-  const date = new Date(`${isoDate}T12:00:00`);
-  const day = String(date.getDate()).padStart(2, "0");
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  return `${day}.${month}.${date.getFullYear()}`;
 }
 
 export function formatGuestName(firstName: string, lastName?: string | null): string {
