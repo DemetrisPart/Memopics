@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { X } from "lucide-react";
 import { Lightbox } from "@/components/guest/lightbox";
 import { NameEntryModal } from "@/components/guest/name-entry-modal";
+import { SquareThumbFrame } from "@/components/guest/square-thumb-frame";
 import {
   checkGuestSession,
   deleteGalleryMedia,
@@ -226,54 +227,47 @@ export function GalleryPageClient({ slug, event }: GalleryPageClientProps) {
               {items.map((item, index) => {
                 const thumbUrl = galleryThumbUrl(item);
                 return (
-                  <div
+                  <SquareThumbFrame
                     key={item.id}
-                    className="min-w-0 overflow-hidden rounded-lg bg-ivory-100"
+                    className="rounded-lg bg-ivory-100"
                   >
-                    {/* pt-[100%] keeps a real box height on iOS — absolute-only children collapse */}
-                    <div className="relative w-full pt-[100%]">
-                      <div className="absolute inset-0">
-                        {thumbUrl ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img
-                            src={thumbUrl}
-                            alt=""
-                            className="size-full object-cover"
-                            loading="lazy"
-                            decoding="async"
-                          />
-                        ) : (
-                          <div className="flex size-full items-center justify-center text-xs text-stone-400">
-                            …
-                          </div>
-                        )}
-                        <button
-                          type="button"
-                          onClick={() => setLightboxIndex(index)}
-                          className="absolute inset-0"
-                          aria-label="View photo"
-                        />
-                        {item.canDelete ? (
-                          <button
-                            type="button"
-                            onClick={(event) =>
-                              void handleGridDelete(event, item)
-                            }
-                            disabled={deletingId === item.id}
-                            className="absolute right-1 top-1 flex size-7 items-center justify-center rounded-full bg-charcoal-900/75 text-white disabled:opacity-50"
-                            aria-label="Delete photo"
-                          >
-                            <X className="size-3.5" aria-hidden />
-                          </button>
-                        ) : null}
-                        {item.guestLabel ? (
-                          <span className="pointer-events-none absolute inset-x-0 bottom-0 truncate bg-charcoal-900/60 px-1 py-0.5 text-[10px] text-ivory-50">
-                            {item.guestLabel}
-                          </span>
-                        ) : null}
+                    {thumbUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={thumbUrl}
+                        alt=""
+                        className="size-full object-cover"
+                        loading="lazy"
+                        decoding="async"
+                      />
+                    ) : (
+                      <div className="flex size-full items-center justify-center text-xs text-stone-400">
+                        …
                       </div>
-                    </div>
-                  </div>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => setLightboxIndex(index)}
+                      className="absolute inset-0"
+                      aria-label="View photo"
+                    />
+                    {item.canDelete ? (
+                      <button
+                        type="button"
+                        onClick={(event) => void handleGridDelete(event, item)}
+                        disabled={deletingId === item.id}
+                        className="absolute right-1 top-1 flex size-7 items-center justify-center rounded-full bg-charcoal-900/75 text-white disabled:opacity-50"
+                        aria-label="Delete photo"
+                      >
+                        <X className="size-3.5" aria-hidden />
+                      </button>
+                    ) : null}
+                    {item.guestLabel ? (
+                      <span className="pointer-events-none absolute inset-x-0 bottom-0 truncate bg-charcoal-900/60 px-1 py-0.5 text-[10px] text-ivory-50">
+                        {item.guestLabel}
+                      </span>
+                    ) : null}
+                  </SquareThumbFrame>
                 );
               })}
             </div>

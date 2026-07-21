@@ -84,6 +84,7 @@ Approved layout (do **not** revert without sign-off):
 - Guests may **delete their own uploads** only (`canDelete` on gallery items).
 - **×** on thumbnail or **Delete photo** in lightbox; confirm before delete.
 - Couple cannot see deleted photos; storage quota is updated.
+- Thumbnail overlays use `SquareThumbFrame` (`pt-[100%]` shell) — **required** for iOS Safari / Android / Chrome grid tiles; do not replace with `aspect-square` + absolute-only children.
 
 ### Limits (MVP)
 

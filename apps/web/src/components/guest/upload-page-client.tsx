@@ -13,6 +13,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { PrivacyNoticeBanner } from "@/components/guest/privacy-notice";
 import { NameEntryModal } from "@/components/guest/name-entry-modal";
+import { SquareThumbFrame } from "@/components/guest/square-thumb-frame";
 import { StorageBanner } from "@/components/guest/storage-banner";
 import {
   checkGuestSession,
@@ -456,9 +457,9 @@ export function UploadPageClient({ slug, event }: UploadPageClientProps) {
             <div className="mt-3 max-h-72 overflow-y-auto overscroll-contain [-webkit-overflow-scrolling:touch]">
               <div className="grid grid-cols-3 gap-2">
                 {pendingPreview.items.map((item) => (
-                  <div
+                  <SquareThumbFrame
                     key={item.id}
-                    className="relative aspect-square overflow-hidden rounded-lg bg-ivory-100"
+                    className="rounded-lg bg-ivory-100"
                   >
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
@@ -477,7 +478,7 @@ export function UploadPageClient({ slug, event }: UploadPageClientProps) {
                     >
                       <X className="size-3.5" aria-hidden />
                     </button>
-                  </div>
+                  </SquareThumbFrame>
                 ))}
               </div>
             </div>
