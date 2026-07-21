@@ -1,6 +1,7 @@
 import { CalendarDays } from "lucide-react";
+import { CoupleNamesHeading } from "@/components/guest/couple-names-heading";
 import { EventHeroCover } from "@/components/guest/event-hero-cover";
-import { formatCoupleNames, formatEventDate } from "@/lib/utils";
+import { formatEventDate } from "@/lib/utils";
 import type { PublicEvent } from "@/lib/api/types";
 
 type EventHeroProps = {
@@ -8,12 +9,6 @@ type EventHeroProps = {
 };
 
 export function EventHero({ event }: EventHeroProps) {
-  const displayNames = formatCoupleNames(
-    event.groomName,
-    event.brideName,
-    event.title,
-  );
-
   return (
     <section className="relative min-h-[68vh] overflow-hidden bg-ivory-50">
       <EventHeroCover
@@ -35,9 +30,12 @@ export function EventHero({ event }: EventHeroProps) {
           <p className="text-[11px] font-medium uppercase tracking-[0.2em] text-gold-600">
             Celebration
           </p>
-          <h1 className="font-couple mt-2 text-[2rem] leading-[1.12] font-medium tracking-[0.01em] text-charcoal-900 sm:text-4xl">
-            {displayNames}
-          </h1>
+          <CoupleNamesHeading
+            groomName={event.groomName}
+            brideName={event.brideName}
+            fallback={event.title}
+            className="font-couple mt-2 text-[2.75rem] leading-[1.02] text-charcoal-900 sm:text-[57px]"
+          />
           <div className="mx-auto mt-4 flex w-fit items-center gap-2 rounded-full border border-stone-200/80 bg-white/75 px-4 py-2 text-sm text-stone-400 backdrop-blur-sm">
             <CalendarDays className="size-4 text-gold-600" aria-hidden />
             <span>{formatEventDate(event.eventDate)}</span>

@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { CoupleNamesHeading } from "@/components/guest/couple-names-heading";
 import { EventQrActions } from "@/components/guest/event-qr-actions";
 import { fetchPublicEventQr } from "@/lib/api/client";
 import { ApiError } from "@/lib/api/types";
-import { formatCoupleNames, formatEventDate } from "@/lib/utils";
+import { formatEventDate } from "@/lib/utils";
 
 type PageProps = {
   params: Promise<{ slug: string }>;
@@ -52,9 +53,12 @@ export default async function EventQrPage({ params }: PageProps) {
           <p className="text-[11px] font-medium uppercase tracking-[0.2em] text-gold-600">
             Scan to share photos
           </p>
-          <h1 className="font-couple mt-3 text-2xl font-medium tracking-[0.01em] text-charcoal-900">
-            {formatCoupleNames(qr.groomName, qr.brideName, qr.title)}
-          </h1>
+          <CoupleNamesHeading
+            groomName={qr.groomName}
+            brideName={qr.brideName}
+            fallback={qr.title}
+            className="font-couple mt-3 text-[39px] leading-[1.02] text-charcoal-900 sm:text-[46px]"
+          />
           <p className="mt-2 text-base text-stone-400">
             {formatEventDate(qr.eventDate)}
           </p>

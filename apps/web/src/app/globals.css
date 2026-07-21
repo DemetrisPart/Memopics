@@ -22,6 +22,14 @@
 }
 
 @layer base {
+  @font-face {
+    font-family: "ED Lavonia";
+    src: url("/fonts/ed-lavonia-classy.woff2") format("woff2");
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+  }
+
   html {
     font-family: var(--font-sans);
     color: var(--color-charcoal-900);
@@ -50,7 +58,14 @@
   }
 
   .font-couple {
-    font-family: var(--font-couple), Georgia, "Times New Roman", serif;
+    font-family:
+      "ED Lavonia",
+      var(--font-couple-fallback),
+      "Great Vibes",
+      Georgia,
+      "Times New Roman",
+      serif;
+    font-weight: 400;
   }
 
   .gold-accent-line {

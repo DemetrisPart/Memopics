@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
-import { Playfair_Display } from "next/font/google";
+import { Great_Vibes } from "next/font/google";
 import "./globals.css";
 
-const playfair = Playfair_Display({
+/** Fallback script until ED Lavonia woff2 is added to public/fonts/ */
+const coupleFallback = Great_Vibes({
+  weight: "400",
   subsets: ["latin"],
-  variable: "--font-couple",
+  variable: "--font-couple-fallback",
 });
 
 export const metadata: Metadata = {
@@ -20,7 +22,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${playfair.variable} bg-ivory-50 text-charcoal-900 antialiased`}
+        className={`${coupleFallback.variable} bg-ivory-50 text-charcoal-900 antialiased`}
       >
         {children}
       </body>
