@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import Image from "next/image";
 import { Trash2, X } from "lucide-react";
 import { fetchMediaUrl } from "@/lib/api/client";
 import { cn } from "@/lib/utils";
@@ -20,8 +19,17 @@ type LightboxProps = {
   onDelete?: (mediaId: string) => Promise<void>;
 };
 
-const SWIPE_COMMIT_PX = 72;
-const SWIPE_EXIT_MS = 240;
+const SNAP_MS = 165;
+const SNAP_EASE = "cubic-bezier(0.22, 1, 0.36, 1)";
+
+async function resolveWebUrl(slug: string, item: LightboxItem) {
+  try {
+    const result = await fetchMediaUrl(slug, item.id, "web");
+    return result.url;
+  } catch {
+    return item.thumbUrl;
+  }
+}
 
 export function Lightbox({
   slug,
@@ -32,36 +40,87 @@ export function Lightbox({
 }: LightboxProps) {
   const [index, setIndex] = useState(initialIndex);
   const [webUrl, setWebUrl] = useState<string | null>(null);
+  const [prevUrl, setPrevUrl] = useState<string | null>(null);
+  const [nextUrl, setNextUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState(false);
   const [swipeHint, setSwipeHint] = useState(false);
-  const [dragX, setDragX] = useState(0);
   const [dragging, setDragging] = useState(false);
-  const startXRef = useRef(0);
-  const dragXRef = useRef(0);
+
+  const viewportRef = useRef<HTMLDivElement>(null);
+  const currentRef = useRef<HTMLDivElement>(null);
+  const prevRef = useRef<HTMLDivElement>(null);
+  const nextRef = useRef<HTMLDivElement>(null);
   const swipeAreaRef = useRef<HTMLDivElement>(null);
+
+  const widthRef = useRef(0);
+  const dragXRef = useRef(0);
+  const draggingRef = useRef(false);
+  const startXRef = useRef(0);
+  const velocityRef = useRef(0);
+  const lastSampleRef = useRef({ x: 0, t: 0 });
+  const indexRef = useRef(index);
 
   const current = items[index];
   const canDelete = Boolean(current?.canDelete && onDelete);
   const canSwipe = items.length > 1;
 
-  const loadWebUrl = useCallback(async () => {
-    if (!current) return;
-    setLoading(true);
-    setWebUrl(null);
-    try {
-      const result = await fetchMediaUrl(slug, current.id, "web");
-      setWebUrl(result.url);
-    } catch {
-      setWebUrl(current.thumbUrl);
-    } finally {
-      setLoading(false);
+  indexRef.current = index;
+
+  const applyTransforms = useCallback((dx: number, animate: boolean) => {
+    const w = widthRef.current;
+    const transition = animate ? `transform ${SNAP_MS}ms ${SNAP_EASE}` : "none";
+    const rot = dx * 0.012;
+
+    const layers: Array<{ el: HTMLDivElement | null; offset: number; z: string }> =
+      [
+        { el: prevRef.current, offset: -w + dx, z: "0" },
+        { el: nextRef.current, offset: w + dx, z: "0" },
+        { el: currentRef.current, offset: dx, z: "1" },
+      ];
+
+    for (const layer of layers) {
+      if (!layer.el) continue;
+      layer.el.style.transition = transition;
+      layer.el.style.zIndex = layer.z;
+      layer.el.style.transform =
+        layer.el === currentRef.current
+          ? `translate3d(${layer.offset}px, 0, 0) rotate(${rot}deg)`
+          : `translate3d(${layer.offset}px, 0, 0) scale(0.97)`;
     }
-  }, [current, slug]);
+  }, []);
+
+  const measureWidth = useCallback(() => {
+    const w = viewportRef.current?.clientWidth ?? 0;
+    if (w > 0) {
+      widthRef.current = w;
+      applyTransforms(dragXRef.current, false);
+    }
+  }, [applyTransforms]);
+
+  const loadSlideUrls = useCallback(async () => {
+    const item = items[index];
+    if (!item) return;
+
+    setLoading(true);
+    const prevItem = items[index - 1];
+    const nextItem = items[index + 1];
+
+    const [currentResolved, prevResolved, nextResolved] = await Promise.all([
+      resolveWebUrl(slug, item),
+      prevItem ? resolveWebUrl(slug, prevItem) : Promise.resolve(null),
+      nextItem ? resolveWebUrl(slug, nextItem) : Promise.resolve(null),
+    ]);
+
+    setWebUrl(currentResolved);
+    setPrevUrl(prevResolved);
+    setNextUrl(nextResolved);
+    setLoading(false);
+  }, [index, items, slug]);
 
   useEffect(() => {
-    void loadWebUrl();
-  }, [loadWebUrl]);
+    void loadSlideUrls();
+  }, [loadSlideUrls]);
 
   useEffect(() => {
     if (items.length === 0) {
@@ -72,9 +131,19 @@ export function Lightbox({
   }, [items.length, onClose]);
 
   useEffect(() => {
-    setDragX(0);
+    measureWidth();
+    const viewport = viewportRef.current;
+    if (!viewport) return;
+
+    const observer = new ResizeObserver(() => measureWidth());
+    observer.observe(viewport);
+    return () => observer.disconnect();
+  }, [measureWidth]);
+
+  useEffect(() => {
     dragXRef.current = 0;
-  }, [index]);
+    applyTransforms(0, false);
+  }, [index, applyTransforms]);
 
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
@@ -93,56 +162,81 @@ export function Lightbox({
   }, [canSwipe, dragging, index, loading, webUrl]);
 
   function applyEdgeResistance(delta: number): number {
-    if (index === 0 && delta > 0) return delta * 0.22;
-    if (index === items.length - 1 && delta < 0) return delta * 0.22;
+    const idx = indexRef.current;
+    if (idx === 0 && delta > 0) return delta * 0.18;
+    if (idx === items.length - 1 && delta < 0) return delta * 0.18;
     return delta;
   }
 
   function beginDrag(clientX: number) {
     if (!canSwipe || loading || deleting) return;
+
     setSwipeHint(false);
+    draggingRef.current = true;
     setDragging(true);
     startXRef.current = clientX;
-    dragXRef.current = 0;
-    setDragX(0);
+    lastSampleRef.current = { x: clientX, t: performance.now() };
+    velocityRef.current = 0;
+    applyTransforms(dragXRef.current, false);
   }
 
   function moveDrag(clientX: number) {
-    if (!dragging) return;
+    if (!draggingRef.current) return;
+
+    const now = performance.now();
+    const elapsed = now - lastSampleRef.current.t;
+    if (elapsed > 0) {
+      velocityRef.current = (clientX - lastSampleRef.current.x) / elapsed;
+    }
+    lastSampleRef.current = { x: clientX, t: now };
+
     const delta = applyEdgeResistance(clientX - startXRef.current);
     dragXRef.current = delta;
-    setDragX(delta);
+    applyTransforms(delta, false);
   }
 
   function finishDrag() {
-    if (!dragging) return;
+    if (!draggingRef.current) return;
+
+    draggingRef.current = false;
     setDragging(false);
 
-    const delta = dragXRef.current;
-    const exitDistance =
-      typeof window !== "undefined" ? window.innerWidth * 0.35 : 320;
+    const dx = dragXRef.current;
+    const w = widthRef.current || 1;
+    const v = velocityRef.current;
+    const idx = indexRef.current;
 
-    if (delta > SWIPE_COMMIT_PX && index > 0) {
-      setDragX(exitDistance);
-      window.setTimeout(() => {
-        setIndex((i) => Math.max(0, i - 1));
-        setDragX(0);
+    const commitNext =
+      (dx < -w * 0.14 || v < -0.55) && idx < items.length - 1;
+    const commitPrev = (dx > w * 0.14 || v > 0.55) && idx > 0;
+
+    const settle = (targetDx: number, nextIndex: number) => {
+      applyTransforms(targetDx, true);
+
+      const layer = currentRef.current;
+      if (!layer) return;
+
+      const onDone = () => {
+        layer.removeEventListener("transitionend", onDone);
         dragXRef.current = 0;
-      }, SWIPE_EXIT_MS);
+        setIndex(nextIndex);
+        applyTransforms(0, false);
+      };
+
+      layer.addEventListener("transitionend", onDone);
+    };
+
+    if (commitNext) {
+      settle(-w, idx + 1);
       return;
     }
 
-    if (delta < -SWIPE_COMMIT_PX && index < items.length - 1) {
-      setDragX(-exitDistance);
-      window.setTimeout(() => {
-        setIndex((i) => Math.min(items.length - 1, i + 1));
-        setDragX(0);
-        dragXRef.current = 0;
-      }, SWIPE_EXIT_MS);
+    if (commitPrev) {
+      settle(w, idx - 1);
       return;
     }
 
-    setDragX(0);
+    applyTransforms(0, true);
     dragXRef.current = 0;
   }
 
@@ -162,9 +256,6 @@ export function Lightbox({
     }
   }
 
-  const dragRotate = dragX * 0.025;
-  const dragOpacity = 1 - Math.min(Math.abs(dragX) / 520, 0.12);
-
   return (
     <div className="fixed inset-0 z-50 flex flex-col bg-charcoal-900">
       <div className="flex items-center justify-between px-4 py-3">
@@ -183,7 +274,7 @@ export function Lightbox({
 
       <div
         ref={swipeAreaRef}
-        className="relative flex flex-1 items-center justify-center px-4 touch-none select-none"
+        className="relative flex flex-1 touch-none select-none items-center justify-center px-4"
         onPointerDown={(e) => {
           if (e.button !== 0) return;
           swipeAreaRef.current?.setPointerCapture(e.pointerId);
@@ -194,33 +285,50 @@ export function Lightbox({
         onPointerCancel={() => finishDrag()}
       >
         <div
+          ref={viewportRef}
           className={cn(
-            "relative h-full max-h-[75vh] w-full max-w-3xl",
-            swipeHint && !dragging && dragX === 0 && "lightbox-swipe-hint",
+            "relative h-full max-h-[75vh] w-full max-w-3xl overflow-hidden",
+            swipeHint && !dragging && "lightbox-swipe-hint",
           )}
         >
+          {prevUrl && index > 0 ? (
+            <div ref={prevRef} className="absolute inset-0 will-change-transform">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={prevUrl}
+                alt=""
+                className="pointer-events-none size-full object-contain select-none"
+                draggable={false}
+              />
+            </div>
+          ) : null}
+
+          {nextUrl && index < items.length - 1 ? (
+            <div ref={nextRef} className="absolute inset-0 will-change-transform">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={nextUrl}
+                alt=""
+                className="pointer-events-none size-full object-contain select-none"
+                draggable={false}
+              />
+            </div>
+          ) : null}
+
           <div
-            className="relative size-full will-change-transform"
-            style={{
-              transform: `translate3d(${dragX}px, 0, 0) rotate(${dragRotate}deg)`,
-              opacity: dragOpacity,
-              transition: dragging
-                ? "none"
-                : `transform ${SWIPE_EXIT_MS}ms ease-out, opacity ${SWIPE_EXIT_MS}ms ease-out`,
-            }}
+            ref={currentRef}
+            className="absolute inset-0 z-[1] will-change-transform"
           >
             {loading || !webUrl ? (
               <div className="flex h-full min-h-[40vh] items-center justify-center text-ivory-50">
                 {deleting ? "Deleting…" : "Loading…"}
               </div>
             ) : (
-              <Image
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
                 src={webUrl}
                 alt=""
-                fill
-                className="pointer-events-none object-contain select-none"
-                sizes="100vw"
-                unoptimized
+                className="pointer-events-none size-full object-contain select-none"
                 draggable={false}
               />
             )}
