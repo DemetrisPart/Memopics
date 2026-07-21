@@ -10,6 +10,7 @@ import {
   ValidateNested,
 } from "class-validator";
 import { Type } from "class-transformer";
+import { MVP_DEFAULTS } from "@memopics/shared";
 
 export class UploadFileItemDto {
   @IsString()
@@ -35,7 +36,7 @@ export class UploadInitDto {
 
   @IsArray()
   @ArrayMinSize(1)
-  @ArrayMaxSize(10)
+  @ArrayMaxSize(MVP_DEFAULTS.MAX_PHOTOS_PER_BATCH)
   @ValidateNested({ each: true })
   @Type(() => UploadFileItemDto)
   files!: UploadFileItemDto[];
