@@ -40,13 +40,15 @@ type UploadPageClientProps = {
   event: PublicEvent;
 };
 
-type PendingPreview = {
-  files: File[];
-  urls: string[];
+type PendingPreviewItem = {
+  id: string;
+  file: File;
+  url: string;
 };
 
-/** Limit decoded thumbnails on mobile — full set stays in memory as File refs only. */
-const PREVIEW_THUMB_LIMIT = 6;
+type PendingPreview = {
+  items: PendingPreviewItem[];
+};
 
 export function UploadPageClient({ slug, event }: UploadPageClientProps) {
   const router = useRouter();
@@ -94,13 +96,29 @@ export function UploadPageClient({ slug, event }: UploadPageClientProps) {
 
   useEffect(() => {
     return () => {
-      pendingPreview?.urls.forEach((url) => URL.revokeObjectURL(url));
+      pendingPreview?.items.forEach((item) => URL.revokeObjectURL(item.url));
     };
   }, [pendingPreview]);
 
   function clearPendingPreview() {
-    pendingPreview?.urls.forEach((url) => URL.revokeObjectURL(url));
+    pendingPreview?.items.forEach((item) => URL.revokeObjectURL(item.url));
     setPendingPreview(null);
+  }
+
+  function removePendingItem(id: string) {
+    if (!pendingPreview) return;
+
+    const removed = pendingPreview.items.find((item) => item.id === id);
+    if (removed) URL.revokeObjectURL(removed.url);
+
+    const nextItems = pendingPreview.items.filter((item) => item.id !== id);
+    if (nextItems.length === 0) {
+      setPendingPreview(null);
+      resetInputs();
+      return;
+    }
+
+    setPendingPreview({ items: nextItems });
   }
 
   function persistState(nextFiles: UploadFileState[], nextBatchId?: string) {
@@ -144,10 +162,11 @@ export function UploadPageClient({ slug, event }: UploadPageClientProps) {
 
     clearPendingPreview();
     setPendingPreview({
-      files: accepted,
-      urls: accepted
-        .slice(0, PREVIEW_THUMB_LIMIT)
-        .map((file) => URL.createObjectURL(file)),
+      items: accepted.map((file) => ({
+        id: randomId(),
+        file,
+        url: URL.createObjectURL(file),
+      })),
     });
   }
 
@@ -167,9 +186,9 @@ export function UploadPageClient({ slug, event }: UploadPageClientProps) {
     setUploading(true);
     setError(null);
 
-    const newFiles: UploadFileState[] = pendingPreview.files.map((file) => ({
+    const newFiles: UploadFileState[] = pendingPreview.items.map((item) => ({
       clientFileId: randomId(),
-      file,
+      file: item.file,
       status: "pending" as const,
       progress: 0,
     }));
@@ -425,33 +444,40 @@ export function UploadPageClient({ slug, event }: UploadPageClientProps) {
         {pendingPreview ? (
           <div className="rounded-2xl border border-stone-200 bg-white p-4 shadow-soft">
             <p className="text-sm font-medium text-charcoal-900">
-              {pendingPreview.files.length === 1
+              {pendingPreview.items.length === 1
                 ? "Upload this photo?"
-                : `Upload ${pendingPreview.files.length} photos?`}
+                : `Upload ${pendingPreview.items.length} photos?`}
             </p>
-            <div className="mt-3 grid grid-cols-3 gap-2">
-              {pendingPreview.urls.map((url) => (
-                <div
-                  key={url}
-                  className="relative aspect-square overflow-hidden rounded-lg bg-ivory-100"
-                >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={url}
-                    alt=""
-                    className="size-full object-cover"
-                    loading="lazy"
-                    decoding="async"
-                  />
-                </div>
-              ))}
-              {pendingPreview.files.length > PREVIEW_THUMB_LIMIT ? (
-                <div className="flex aspect-square items-center justify-center rounded-lg bg-charcoal-800/5">
-                  <span className="text-sm font-medium text-charcoal-900">
-                    +{pendingPreview.files.length - PREVIEW_THUMB_LIMIT}
-                  </span>
-                </div>
-              ) : null}
+            <p className="mt-1 text-xs text-stone-400">
+              Tap × on any photo to remove it before uploading.
+            </p>
+            <div className="mt-3 max-h-72 overflow-y-auto overscroll-contain [-webkit-overflow-scrolling:touch]">
+              <div className="grid grid-cols-3 gap-2">
+                {pendingPreview.items.map((item) => (
+                  <div
+                    key={item.id}
+                    className="relative aspect-square overflow-hidden rounded-lg bg-ivory-100"
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={item.url}
+                      alt=""
+                      className="size-full object-cover"
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removePendingItem(item.id)}
+                      disabled={uploading}
+                      className="absolute right-1 top-1 flex size-7 items-center justify-center rounded-full bg-charcoal-900/75 text-white disabled:opacity-50"
+                      aria-label={`Remove ${item.file.name}`}
+                    >
+                      <X className="size-3.5" aria-hidden />
+                    </button>
+                  </div>
+                ))}
+              </div>
             </div>
             <div className="mt-4 flex gap-3">
               <Button
