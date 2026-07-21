@@ -81,7 +81,7 @@ Approved layout (do **not** revert without sign-off):
 ### Limits (MVP)
 
 - Max **25 MB** per photo.
-- Max **20 photos** per batch.
+- Max **15 photos** per batch.
 - Allowed: JPEG, PNG, WebP, HEIC.
 
 ---
