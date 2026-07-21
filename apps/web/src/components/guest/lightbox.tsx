@@ -31,6 +31,16 @@ async function resolveWebUrl(slug: string, item: LightboxItem) {
   }
 }
 
+function preloadImage(url: string | null): Promise<void> {
+  if (!url) return Promise.resolve();
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => resolve();
+    img.onerror = () => resolve();
+    img.src = url;
+  });
+}
+
 export function Lightbox({
   slug,
   items,
@@ -39,88 +49,122 @@ export function Lightbox({
   onDelete,
 }: LightboxProps) {
   const [index, setIndex] = useState(initialIndex);
-  const [webUrl, setWebUrl] = useState<string | null>(null);
-  const [prevUrl, setPrevUrl] = useState<string | null>(null);
-  const [nextUrl, setNextUrl] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [urlsById, setUrlsById] = useState<Record<string, string>>({});
+  const [initialLoading, setInitialLoading] = useState(true);
   const [deleting, setDeleting] = useState(false);
   const [swipeHint, setSwipeHint] = useState(false);
   const [dragging, setDragging] = useState(false);
+  const [settling, setSettling] = useState(false);
+  /** Locks the visible photo URL while a slide-out animation runs. */
+  const [lockedUrl, setLockedUrl] = useState<string | null>(null);
 
   const viewportRef = useRef<HTMLDivElement>(null);
   const currentRef = useRef<HTMLDivElement>(null);
-  const prevRef = useRef<HTMLDivElement>(null);
-  const nextRef = useRef<HTMLDivElement>(null);
   const swipeAreaRef = useRef<HTMLDivElement>(null);
 
   const widthRef = useRef(0);
   const dragXRef = useRef(0);
   const draggingRef = useRef(false);
+  const settlingRef = useRef(false);
   const startXRef = useRef(0);
   const velocityRef = useRef(0);
   const lastSampleRef = useRef({ x: 0, t: 0 });
   const indexRef = useRef(index);
+  const itemsRef = useRef(items);
+  const urlsByIdRef = useRef(urlsById);
+  const loadGenRef = useRef(0);
+  const hintShownRef = useRef(false);
 
   const current = items[index];
   const canDelete = Boolean(current?.canDelete && onDelete);
   const canSwipe = items.length > 1;
 
   indexRef.current = index;
+  itemsRef.current = items;
+  urlsByIdRef.current = urlsById;
 
-  const applyTransforms = useCallback((dx: number, animate: boolean) => {
-    const w = widthRef.current;
-    const transition = animate ? `transform ${SNAP_MS}ms ${SNAP_EASE}` : "none";
+  const urlForItem = useCallback(
+    (item: LightboxItem | undefined) => {
+      if (!item) return null;
+      return urlsById[item.id] ?? item.thumbUrl;
+    },
+    [urlsById],
+  );
+
+  const displayUrl = lockedUrl ?? urlForItem(current);
+
+  const applyTransform = useCallback((dx: number, animate: boolean) => {
+    const layer = currentRef.current;
+    if (!layer) return;
+
     const rot = dx * 0.012;
-
-    const layers: Array<{ el: HTMLDivElement | null; offset: number; z: string }> =
-      [
-        { el: prevRef.current, offset: -w + dx, z: "0" },
-        { el: nextRef.current, offset: w + dx, z: "0" },
-        { el: currentRef.current, offset: dx, z: "1" },
-      ];
-
-    for (const layer of layers) {
-      if (!layer.el) continue;
-      layer.el.style.transition = transition;
-      layer.el.style.zIndex = layer.z;
-      layer.el.style.transform =
-        layer.el === currentRef.current
-          ? `translate3d(${layer.offset}px, 0, 0) rotate(${rot}deg)`
-          : `translate3d(${layer.offset}px, 0, 0) scale(0.97)`;
-    }
+    layer.style.transition = animate
+      ? `transform ${SNAP_MS}ms ${SNAP_EASE}`
+      : "none";
+    layer.style.transform = `translate3d(${dx}px, 0, 0) rotate(${rot}deg)`;
   }, []);
 
-  const measureWidth = useCallback(() => {
-    const w = viewportRef.current?.clientWidth ?? 0;
-    if (w > 0) {
-      widthRef.current = w;
-      applyTransforms(dragXRef.current, false);
-    }
-  }, [applyTransforms]);
+  const cacheUrls = useCallback((entries: Record<string, string | null>) => {
+    const valid = Object.entries(entries).filter(
+      (entry): entry is [string, string] => Boolean(entry[1]),
+    );
+    if (valid.length === 0) return;
 
-  const loadSlideUrls = useCallback(async () => {
-    const item = items[index];
-    if (!item) return;
+    setUrlsById((prev) => {
+      const next = { ...prev };
+      for (const [id, url] of valid) {
+        next[id] = url;
+      }
+      urlsByIdRef.current = next;
+      return next;
+    });
+  }, []);
 
-    setLoading(true);
-    const prevItem = items[index - 1];
-    const nextItem = items[index + 1];
+  const prefetchAround = useCallback(
+    async (atIndex: number, gen: number) => {
+      const list = itemsRef.current;
+      const centerItem = list[atIndex];
+      const prevItem = list[atIndex - 1];
+      const nextItem = list[atIndex + 1];
 
-    const [currentResolved, prevResolved, nextResolved] = await Promise.all([
-      resolveWebUrl(slug, item),
-      prevItem ? resolveWebUrl(slug, prevItem) : Promise.resolve(null),
-      nextItem ? resolveWebUrl(slug, nextItem) : Promise.resolve(null),
-    ]);
+      const [centerResolved, prevResolved, nextResolved] = await Promise.all([
+        centerItem ? resolveWebUrl(slug, centerItem) : Promise.resolve(null),
+        prevItem ? resolveWebUrl(slug, prevItem) : Promise.resolve(null),
+        nextItem ? resolveWebUrl(slug, nextItem) : Promise.resolve(null),
+      ]);
 
-    setWebUrl(currentResolved);
-    setPrevUrl(prevResolved);
-    setNextUrl(nextResolved);
-    setLoading(false);
-  }, [index, items, slug]);
+      if (gen !== loadGenRef.current) return;
+
+      cacheUrls({
+        ...(centerItem ? { [centerItem.id]: centerResolved } : {}),
+        ...(prevItem ? { [prevItem.id]: prevResolved } : {}),
+        ...(nextItem ? { [nextItem.id]: nextResolved } : {}),
+      });
+
+      await Promise.all([
+        preloadImage(centerResolved),
+        preloadImage(prevResolved),
+        preloadImage(nextResolved),
+      ]);
+    },
+    [cacheUrls, slug],
+  );
 
   useEffect(() => {
-    void loadSlideUrls();
-  }, [loadSlideUrls]);
+    hintShownRef.current = false;
+    setSwipeHint(false);
+    setLockedUrl(null);
+    setIndex(initialIndex);
+
+    const gen = ++loadGenRef.current;
+    setInitialLoading(true);
+
+    void (async () => {
+      await prefetchAround(initialIndex, gen);
+      if (gen !== loadGenRef.current) return;
+      setInitialLoading(false);
+    })();
+  }, [initialIndex, prefetchAround, slug]);
 
   useEffect(() => {
     if (items.length === 0) {
@@ -131,19 +175,23 @@ export function Lightbox({
   }, [items.length, onClose]);
 
   useEffect(() => {
-    measureWidth();
     const viewport = viewportRef.current;
     if (!viewport) return;
 
-    const observer = new ResizeObserver(() => measureWidth());
+    const updateWidth = () => {
+      const w = viewport.clientWidth;
+      if (w <= 0) return;
+      widthRef.current = w;
+      if (!draggingRef.current && !settlingRef.current) {
+        applyTransform(dragXRef.current, false);
+      }
+    };
+
+    updateWidth();
+    const observer = new ResizeObserver(updateWidth);
     observer.observe(viewport);
     return () => observer.disconnect();
-  }, [measureWidth]);
-
-  useEffect(() => {
-    dragXRef.current = 0;
-    applyTransforms(0, false);
-  }, [index, applyTransforms]);
+  }, [applyTransform]);
 
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
@@ -154,22 +202,34 @@ export function Lightbox({
   }, [onClose]);
 
   useEffect(() => {
-    if (!canSwipe || loading || !webUrl || dragging) return;
+    if (
+      !canSwipe ||
+      initialLoading ||
+      !displayUrl ||
+      dragging ||
+      settling ||
+      hintShownRef.current
+    ) {
+      return;
+    }
 
+    hintShownRef.current = true;
     setSwipeHint(true);
     const timer = window.setTimeout(() => setSwipeHint(false), 1100);
     return () => window.clearTimeout(timer);
-  }, [canSwipe, dragging, index, loading, webUrl]);
+  }, [canSwipe, displayUrl, dragging, initialLoading, settling]);
 
   function applyEdgeResistance(delta: number): number {
     const idx = indexRef.current;
     if (idx === 0 && delta > 0) return delta * 0.18;
-    if (idx === items.length - 1 && delta < 0) return delta * 0.18;
+    if (idx === itemsRef.current.length - 1 && delta < 0) {
+      return delta * 0.18;
+    }
     return delta;
   }
 
   function beginDrag(clientX: number) {
-    if (!canSwipe || loading || deleting) return;
+    if (!canSwipe || deleting || !displayUrl || settlingRef.current) return;
 
     setSwipeHint(false);
     draggingRef.current = true;
@@ -177,7 +237,7 @@ export function Lightbox({
     startXRef.current = clientX;
     lastSampleRef.current = { x: clientX, t: performance.now() };
     velocityRef.current = 0;
-    applyTransforms(dragXRef.current, false);
+    applyTransform(dragXRef.current, false);
   }
 
   function moveDrag(clientX: number) {
@@ -192,7 +252,7 @@ export function Lightbox({
 
     const delta = applyEdgeResistance(clientX - startXRef.current);
     dragXRef.current = delta;
-    applyTransforms(delta, false);
+    applyTransform(delta, false);
   }
 
   function finishDrag() {
@@ -205,25 +265,62 @@ export function Lightbox({
     const w = widthRef.current || 1;
     const v = velocityRef.current;
     const idx = indexRef.current;
+    const list = itemsRef.current;
+    const nextItem = list[idx + 1];
+    const prevItem = list[idx - 1];
+    const nextUrl = urlForItem(nextItem);
+    const prevUrl = urlForItem(prevItem);
+    const currentUrl = urlForItem(list[idx]);
 
     const commitNext =
-      (dx < -w * 0.14 || v < -0.55) && idx < items.length - 1;
-    const commitPrev = (dx > w * 0.14 || v > 0.55) && idx > 0;
+      (dx < -w * 0.14 || v < -0.55) && idx < list.length - 1 && nextUrl;
+    const commitPrev =
+      (dx > w * 0.14 || v > 0.55) && idx > 0 && prevUrl;
 
     const settle = (targetDx: number, nextIndex: number) => {
-      applyTransforms(targetDx, true);
+      if (!currentUrl) return;
+
+      settlingRef.current = true;
+      setSettling(true);
+      setLockedUrl(currentUrl);
+      applyTransform(targetDx, true);
 
       const layer = currentRef.current;
-      if (!layer) return;
+      if (!layer) {
+        settlingRef.current = false;
+        setSettling(false);
+        setLockedUrl(null);
+        return;
+      }
 
-      const onDone = () => {
-        layer.removeEventListener("transitionend", onDone);
-        dragXRef.current = 0;
+      let finished = false;
+      const finish = () => {
+        if (finished) return;
+        finished = true;
+        layer.removeEventListener("transitionend", onTransitionEnd);
+
+        layer.style.transition = "none";
         setIndex(nextIndex);
-        applyTransforms(0, false);
+        setLockedUrl(null);
+
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            layer.style.transform = "translate3d(0, 0, 0)";
+            dragXRef.current = 0;
+            settlingRef.current = false;
+            setSettling(false);
+            void prefetchAround(nextIndex, loadGenRef.current);
+          });
+        });
       };
 
-      layer.addEventListener("transitionend", onDone);
+      const onTransitionEnd = (event: TransitionEvent) => {
+        if (event.propertyName !== "transform") return;
+        finish();
+      };
+
+      layer.addEventListener("transitionend", onTransitionEnd);
+      window.setTimeout(finish, SNAP_MS + 80);
     };
 
     if (commitNext) {
@@ -236,7 +333,7 @@ export function Lightbox({
       return;
     }
 
-    applyTransforms(0, true);
+    applyTransform(0, true);
     dragXRef.current = 0;
   }
 
@@ -286,52 +383,29 @@ export function Lightbox({
       >
         <div
           ref={viewportRef}
-          className={cn(
-            "relative h-full max-h-[75vh] w-full max-w-3xl overflow-hidden",
-            swipeHint && !dragging && "lightbox-swipe-hint",
-          )}
+          className="relative h-full max-h-[75vh] w-full max-w-3xl overflow-hidden bg-charcoal-900"
         >
-          {prevUrl && index > 0 ? (
-            <div ref={prevRef} className="absolute inset-0 will-change-transform">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={prevUrl}
-                alt=""
-                className="pointer-events-none size-full object-contain select-none"
-                draggable={false}
-              />
-            </div>
-          ) : null}
-
-          {nextUrl && index < items.length - 1 ? (
-            <div ref={nextRef} className="absolute inset-0 will-change-transform">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={nextUrl}
-                alt=""
-                className="pointer-events-none size-full object-contain select-none"
-                draggable={false}
-              />
-            </div>
-          ) : null}
-
           <div
             ref={currentRef}
-            className="absolute inset-0 z-[1] will-change-transform"
+            className={cn(
+              "absolute inset-0 will-change-transform",
+              swipeHint && !dragging && !settling && "lightbox-swipe-hint",
+            )}
           >
-            {loading || !webUrl ? (
+            {initialLoading && !displayUrl ? (
               <div className="flex h-full min-h-[40vh] items-center justify-center text-ivory-50">
                 {deleting ? "Deleting…" : "Loading…"}
               </div>
-            ) : (
+            ) : displayUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
-                src={webUrl}
+                key={current?.id ?? "slide"}
+                src={displayUrl}
                 alt=""
                 className="pointer-events-none size-full object-contain select-none"
                 draggable={false}
               />
-            )}
+            ) : null}
           </div>
         </div>
       </div>
