@@ -82,6 +82,7 @@ Approved layout (do **not** revert without sign-off):
 
 - Max **25 MB** per photo.
 - Max **15 photos** per batch.
+- Max **100 photos** per guest per hour (in-flight + completed; failed/abandoned attempts don't count).
 - Allowed: JPEG, PNG, WebP, HEIC.
 
 ---

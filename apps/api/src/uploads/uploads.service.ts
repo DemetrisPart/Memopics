@@ -380,11 +380,27 @@ export class UploadsService {
     incomingFileCount: number,
   ): Promise<void> {
     const since = new Date(Date.now() - 60 * 60 * 1000);
+    const pendingCutoff = new Date(
+      Date.now() - MVP_DEFAULTS.PRESIGNED_UPLOAD_TTL_SECONDS * 1000,
+    );
+
+    // Count successful + in-flight uploads only — not abandoned PENDING rows from failed tests.
     const count = await this.prisma.mediaAsset.count({
       where: {
         guestSessionId,
         deletedAt: null,
         createdAt: { gte: since },
+        OR: [
+          {
+            status: {
+              in: [MediaAssetStatus.ACTIVE, MediaAssetStatus.PROCESSING],
+            },
+          },
+          {
+            status: MediaAssetStatus.PENDING,
+            createdAt: { gte: pendingCutoff },
+          },
+        ],
       },
     });
 
@@ -393,7 +409,7 @@ export class UploadsService {
       MVP_DEFAULTS.MAX_PHOTOS_PER_GUEST_SESSION_HOUR
     ) {
       throw new ConflictException(
-        "Upload limit reached for this session. Please try again later.",
+        `Upload limit reached (${MVP_DEFAULTS.MAX_PHOTOS_PER_GUEST_SESSION_HOUR} photos per hour). Please try again later.`,
       );
     }
   }
