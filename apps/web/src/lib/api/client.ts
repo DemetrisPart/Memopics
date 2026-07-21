@@ -1,0 +1,244 @@
+import type {
+  ApiErrorBody,
+  GalleryResponse,
+  GuestSessionResponse,
+  GuestSessionStatus,
+  PublicEvent,
+  PublicEventQr,
+  UploadCompleteResponse,
+  UploadInitResponse,
+} from "./types";
+import { inferPhotoContentType } from "@/lib/utils";
+import { resolveNetworkUrl } from "@/lib/mobile-network";
+import { ApiError } from "./types";
+
+function getServerApiUrl(): string {
+  return process.env.API_URL ?? "http://localhost:3001";
+}
+
+/** Browser calls same-origin proxy so mobile/LAN testing works without cross-port cookies. */
+function getClientApiUrl(): string {
+  if (typeof window === "undefined") {
+    return getServerApiUrl();
+  }
+  return "";
+}
+
+function resolveApiUrl(): string {
+  return getClientApiUrl();
+}
+
+function buildApiUrl(path: string): string {
+  const base = resolveApiUrl();
+  if (base) {
+    return `${base}/v1${path}`;
+  }
+  return `/api/v1${path}`;
+}
+
+async function apiFetch<T>(
+  path: string,
+  init?: RequestInit & { credentials?: RequestCredentials },
+): Promise<T> {
+  const url = buildApiUrl(path);
+  let response: Response;
+  try {
+    response = await fetch(url, {
+      ...init,
+      credentials: init?.credentials ?? "include",
+      headers: {
+        "Content-Type": "application/json",
+        ...init?.headers,
+      },
+    });
+  } catch {
+    throw new ApiError(
+      "Could not reach the server. Check your connection and try again.",
+      0,
+    );
+  }
+
+  if (!response.ok) {
+    throw await parseError(response);
+  }
+
+  if (response.status === 204) {
+    return undefined as T;
+  }
+
+  return (await response.json()) as T;
+}
+
+async function parseError(response: Response): Promise<ApiError> {
+  let message = response.statusText || "Request failed";
+  try {
+    const body = (await response.json()) as ApiErrorBody;
+    if (typeof body.message === "string") {
+      message = body.message;
+    } else if (Array.isArray(body.message)) {
+      message = body.message.join(", ");
+    }
+  } catch {
+    // ignore parse errors
+  }
+  return new ApiError(message, response.status);
+}
+
+export async function fetchPublicEvent(slug: string): Promise<PublicEvent> {
+  return apiFetch<PublicEvent>(`/public/events/${encodeURIComponent(slug)}`, {
+    credentials: "omit",
+  });
+}
+
+export async function fetchPublicEventQr(slug: string): Promise<PublicEventQr> {
+  return apiFetch<PublicEventQr>(
+    `/public/events/${encodeURIComponent(slug)}/qr`,
+    { credentials: "omit" },
+  );
+}
+
+export async function createGuestSession(
+  slug: string,
+  data: { firstName: string; lastName?: string },
+): Promise<GuestSessionResponse> {
+  return apiFetch<GuestSessionResponse>(
+    `/public/events/${encodeURIComponent(slug)}/guest-session`,
+    {
+      method: "POST",
+      body: JSON.stringify(data),
+    },
+  );
+}
+
+export async function initUpload(
+  slug: string,
+  data: {
+    uploadSessionId: string;
+    files: {
+      clientFileId: string;
+      contentType: string;
+      contentLength: number;
+      fileName?: string;
+    }[];
+  },
+): Promise<UploadInitResponse> {
+  return apiFetch<UploadInitResponse>(
+    `/public/events/${encodeURIComponent(slug)}/uploads/init`,
+    {
+      method: "POST",
+      body: JSON.stringify(data),
+    },
+  );
+}
+
+export async function completeUpload(
+  slug: string,
+  batchId: string,
+  data?: { mediaIds?: string[] },
+): Promise<UploadCompleteResponse> {
+  return apiFetch<UploadCompleteResponse>(
+    `/public/events/${encodeURIComponent(slug)}/uploads/${encodeURIComponent(batchId)}/complete`,
+    {
+      method: "POST",
+      body: JSON.stringify(data ?? {}),
+    },
+  );
+}
+
+export async function fetchGallery(
+  slug: string,
+  params?: { cursor?: string; limit?: number },
+): Promise<GalleryResponse> {
+  const search = new URLSearchParams();
+  if (params?.cursor) search.set("cursor", params.cursor);
+  if (params?.limit) search.set("limit", String(params.limit));
+  const query = search.toString();
+  return apiFetch<GalleryResponse>(
+    `/public/events/${encodeURIComponent(slug)}/gallery${query ? `?${query}` : ""}`,
+  );
+}
+
+export async function fetchMediaUrl(
+  slug: string,
+  mediaId: string,
+  variant: "thumb" | "web" = "web",
+): Promise<{
+  url: string;
+  urlLan?: string | null;
+  urlPublic?: string | null;
+  variant: string;
+  mediaId: string;
+}> {
+  const result = await apiFetch<{
+    url: string;
+    urlLan?: string | null;
+    urlPublic?: string | null;
+    variant: string;
+    mediaId: string;
+  }>(
+    `/public/events/${encodeURIComponent(slug)}/media/${encodeURIComponent(mediaId)}/url?variant=${variant}`,
+  );
+  return {
+    ...result,
+    url: resolveNetworkUrl({
+      url: result.url,
+      lanUrl: result.urlLan,
+      publicUrl: result.urlPublic,
+    }),
+  };
+}
+
+export function resolveUploadUrl(item: {
+  uploadUrl: string;
+  uploadUrlLan?: string | null;
+  uploadUrlPublic?: string | null;
+}): string {
+  return resolveNetworkUrl({
+    url: item.uploadUrl,
+    lanUrl: item.uploadUrlLan,
+    publicUrl: item.uploadUrlPublic,
+  });
+}
+
+export async function uploadFileToPresignedUrl(
+  file: File,
+  uploadUrl: string,
+  onProgress?: (percent: number) => void,
+): Promise<void> {
+  await new Promise<void>((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open("PUT", uploadUrl);
+    xhr.setRequestHeader("Content-Type", file.type || inferPhotoContentType(file));
+
+    xhr.upload.onprogress = (event) => {
+      if (event.lengthComputable && onProgress) {
+        onProgress(Math.round((event.loaded / event.total) * 100));
+      }
+    };
+
+    xhr.onload = () => {
+      if (xhr.status >= 200 && xhr.status < 300) {
+        resolve();
+        return;
+      }
+      reject(new Error(`Upload failed with status ${xhr.status}`));
+    };
+
+    xhr.onerror = () => reject(new Error("Network error during upload"));
+    xhr.onabort = () => reject(new Error("Upload aborted"));
+    xhr.send(file);
+  });
+}
+
+export async function checkGuestSession(slug: string): Promise<boolean> {
+  const status = await fetchGuestSessionStatus(slug);
+  return status.active;
+}
+
+export async function fetchGuestSessionStatus(
+  slug: string,
+): Promise<GuestSessionStatus> {
+  return apiFetch<GuestSessionStatus>(
+    `/public/events/${encodeURIComponent(slug)}/guest-session`,
+  );
+}

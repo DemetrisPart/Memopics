@@ -11,6 +11,7 @@ import { PublicModule } from "./public/public.module";
 import { QueueModule } from "./queue/queue.module";
 import { RateLimitModule } from "./rate-limit/rate-limit.module";
 import { StorageModule } from "./storage/storage.module";
+import { GalleryModule } from "./gallery/gallery.module";
 import { UploadsModule } from "./uploads/uploads.module";
 
 @Module({
@@ -30,6 +31,7 @@ import { UploadsModule } from "./uploads/uploads.module";
     EventsModule,
     PublicModule,
     UploadsModule,
+    GalleryModule,
   ],
   controllers: [HealthController],
 })

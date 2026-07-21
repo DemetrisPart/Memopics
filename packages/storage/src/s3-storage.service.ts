@@ -11,6 +11,7 @@ import type {
   PresignedDownloadOptions,
   PresignedUploadOptions,
   PresignedUploadUrl,
+  PresignedUrlSet,
   PutObjectOptions,
   StorageService,
 } from "@memopics/domain";
@@ -31,8 +32,27 @@ async function streamToBuffer(body: unknown): Promise<Buffer> {
   throw new Error("Unsupported S3 response body type");
 }
 
+function createPresignClient(
+  config: S3StorageConfig,
+  endpoint: string,
+): S3Client {
+  return new S3Client({
+    endpoint,
+    region: config.region,
+    credentials: {
+      accessKeyId: config.accessKeyId,
+      secretAccessKey: config.secretAccessKey,
+    },
+    forcePathStyle: config.forcePathStyle ?? true,
+  });
+}
+
 export interface S3StorageConfig {
   endpoint: string;
+  /** Host reachable on local Wi-Fi (e.g. 192.168.x.x). Used for presigned URLs. */
+  lanEndpoint?: string;
+  /** Host reachable on cellular / remote (Tailscale, ngrok). Used for presigned URLs. */
+  publicEndpoint?: string;
   region: string;
   bucket: string;
   accessKeyId: string;
@@ -42,10 +62,13 @@ export interface S3StorageConfig {
 
 export class S3StorageService implements StorageService {
   private readonly client: S3Client;
+  private readonly lanPresignClient?: S3Client;
+  private readonly publicPresignClient?: S3Client;
   private readonly bucket: string;
 
   constructor(config: S3StorageConfig) {
     this.bucket = config.bucket;
+
     this.client = new S3Client({
       endpoint: config.endpoint,
       region: config.region,
@@ -55,6 +78,39 @@ export class S3StorageService implements StorageService {
       },
       forcePathStyle: config.forcePathStyle ?? true,
     });
+
+    if (config.lanEndpoint) {
+      this.lanPresignClient = createPresignClient(config, config.lanEndpoint);
+    }
+
+    if (config.publicEndpoint) {
+      this.publicPresignClient = createPresignClient(
+        config,
+        config.publicEndpoint,
+      );
+    }
+  }
+
+  private async signUrl(
+    command: PutObjectCommand | GetObjectCommand,
+    expiresIn: number,
+  ): Promise<PresignedUrlSet> {
+    const fallbackClient =
+      this.publicPresignClient ??
+      this.lanPresignClient ??
+      this.client;
+
+    const [url, lanUrl, publicUrl] = await Promise.all([
+      getSignedUrl(fallbackClient, command, { expiresIn }),
+      this.lanPresignClient
+        ? getSignedUrl(this.lanPresignClient, command, { expiresIn })
+        : Promise.resolve(undefined),
+      this.publicPresignClient
+        ? getSignedUrl(this.publicPresignClient, command, { expiresIn })
+        : Promise.resolve(undefined),
+    ]);
+
+    return { url, lanUrl, publicUrl };
   }
 
   async getPresignedUploadUrl(
@@ -68,9 +124,9 @@ export class S3StorageService implements StorageService {
       ContentType: options.contentType,
       ContentLength: options.contentLength,
     });
-    const url = await getSignedUrl(this.client, command, { expiresIn });
+    const urls = await this.signUrl(command, expiresIn);
     return {
-      url,
+      ...urls,
       key: options.key,
       expiresAt: new Date(Date.now() + expiresIn * 1000),
     };
@@ -79,6 +135,13 @@ export class S3StorageService implements StorageService {
   async getPresignedDownloadUrl(
     options: PresignedDownloadOptions,
   ): Promise<string> {
+    const urls = await this.getPresignedDownloadUrls(options);
+    return urls.url;
+  }
+
+  async getPresignedDownloadUrls(
+    options: PresignedDownloadOptions,
+  ): Promise<PresignedUrlSet> {
     const expiresIn =
       options.expiresInSeconds ?? MVP_DEFAULTS.PRESIGNED_DOWNLOAD_TTL_SECONDS;
     const command = new GetObjectCommand({
@@ -88,7 +151,7 @@ export class S3StorageService implements StorageService {
         ? `attachment; filename="${options.fileName}"`
         : undefined,
     });
-    return getSignedUrl(this.client, command, { expiresIn });
+    return this.signUrl(command, expiresIn);
   }
 
   async getObjectBuffer(options: GetObjectOptions): Promise<Buffer> {
@@ -147,6 +210,8 @@ export function createStorageServiceFromEnv(): S3StorageService {
 
   return new S3StorageService({
     endpoint,
+    lanEndpoint: process.env.STORAGE_LAN_ENDPOINT,
+    publicEndpoint: process.env.STORAGE_PUBLIC_ENDPOINT,
     region,
     bucket,
     accessKeyId,

@@ -1,5 +1,13 @@
-export interface PresignedUploadUrl {
+export interface PresignedUrlSet {
+  /** Default URL (public endpoint when configured, otherwise primary). */
   url: string;
+  /** LAN-reachable URL when STORAGE_LAN_ENDPOINT is configured. */
+  lanUrl?: string;
+  /** Remote-reachable URL when STORAGE_PUBLIC_ENDPOINT is configured. */
+  publicUrl?: string;
+}
+
+export interface PresignedUploadUrl extends PresignedUrlSet {
   key: string;
   expiresAt: Date;
 }
@@ -39,6 +47,10 @@ export interface StorageService {
   ): Promise<PresignedUploadUrl>;
 
   getPresignedDownloadUrl(options: PresignedDownloadOptions): Promise<string>;
+
+  getPresignedDownloadUrls(
+    options: PresignedDownloadOptions,
+  ): Promise<PresignedUrlSet>;
 
   getObjectBuffer(options: GetObjectOptions): Promise<Buffer>;
 

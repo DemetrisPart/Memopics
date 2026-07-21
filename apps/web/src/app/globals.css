@@ -1,9 +1,63 @@
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
+@import "tailwindcss";
+
+@theme {
+  --color-ivory-50: #fdfbf7;
+  --color-ivory-100: #f9f5ee;
+  --color-stone-200: #e8e2d9;
+  --color-stone-400: #a89f91;
+  --color-charcoal-800: #2c2825;
+  --color-charcoal-900: #1a1714;
+  --color-gold-100: #f5edd8;
+  --color-gold-400: #c9a962;
+  --color-gold-600: #a68b4b;
+  --color-gold-700: #8a7340;
+  --color-rose-500: #c45c5c;
+  --color-rose-600: #9b4d4d;
+  --color-amber-500: #d4a017;
+  --font-serif: "Georgia", "Times New Roman", serif;
+  --font-sans: system-ui, -apple-system, "Segoe UI", sans-serif;
+  --shadow-soft: 0 2px 8px rgb(26 23 20 / 6%);
+  --shadow-lift: 0 8px 32px rgb(26 23 20 / 12%);
+  --shadow-hero: 0 16px 48px rgb(26 23 20 / 18%);
 }
 
-body {
-  -webkit-font-smoothing: antialiased;
+@layer base {
+  html {
+    font-family: var(--font-sans);
+    color: var(--color-charcoal-900);
+    background: var(--color-ivory-50);
+  }
+
+  body {
+    min-height: 100dvh;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+@layer utilities {
+  .guest-page-bg {
+    background:
+      radial-gradient(ellipse 80% 50% at 50% -10%, rgb(201 169 98 / 8%), transparent),
+      linear-gradient(180deg, var(--color-ivory-50) 0%, var(--color-ivory-100) 100%);
+  }
+
+  .glass-card {
+    background: rgb(253 251 247 / 88%);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgb(232 226 217 / 80%);
+    box-shadow: var(--shadow-lift);
+  }
+
+  .gold-accent-line {
+    background: linear-gradient(
+      90deg,
+      transparent,
+      var(--color-gold-400) 20%,
+      var(--color-gold-600) 50%,
+      var(--color-gold-400) 80%,
+      transparent
+    );
+    height: 1px;
+  }
 }

@@ -140,6 +140,8 @@ export class UploadsService {
           mediaId: media.id,
           clientFileId: file.clientFileId,
           uploadUrl: presigned.url,
+          uploadUrlLan: presigned.lanUrl ?? null,
+          uploadUrlPublic: presigned.publicUrl ?? null,
           expiresAt: presigned.expiresAt.toISOString(),
         };
       }),

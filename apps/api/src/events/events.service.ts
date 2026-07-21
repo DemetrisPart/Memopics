@@ -336,6 +336,20 @@ export class EventsService {
     return this.serializePublicEvent(event);
   }
 
+  async getPublicEventQr(slug: string) {
+    const event = await this.getPublicEventBySlug(slug);
+    const eventUrl = this.qrService.getEventPublicUrl(event.slug);
+    const qrCodePngBase64 = await this.qrService.generatePngBase64(eventUrl);
+
+    return {
+      slug: event.slug,
+      title: event.title,
+      eventDate: event.eventDate,
+      eventUrl,
+      qrCodePngBase64,
+    };
+  }
+
   private async findOwnedEvent(
     eventId: string,
     ownerUserId: string,
@@ -373,6 +387,10 @@ export class EventsService {
         })
       : null;
 
+    const storageUsedPercent = Number(
+      (event.storageUsedBytes * BigInt(100)) / event.storageLimitBytes,
+    );
+
     return {
       slug: event.slug,
       title: event.title,
@@ -380,6 +398,10 @@ export class EventsService {
       groomName: event.groomName,
       eventDate: event.eventDate.toISOString().slice(0, 10),
       privacyMode: event.privacyMode,
+      showGuestNamesPublicly: event.showGuestNamesPublicly,
+      storageUsedBytes: event.storageUsedBytes.toString(),
+      storageLimitBytes: event.storageLimitBytes.toString(),
+      storageUsedPercent,
       coverImageUrl,
     };
   }
