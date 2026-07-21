@@ -2,8 +2,9 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
-import { ChevronLeft, ChevronRight, Trash2, X } from "lucide-react";
+import { Trash2, X } from "lucide-react";
 import { fetchMediaUrl } from "@/lib/api/client";
+import { cn } from "@/lib/utils";
 
 type LightboxItem = {
   id: string;
@@ -19,6 +20,8 @@ type LightboxProps = {
   onDelete?: (mediaId: string) => Promise<void>;
 };
 
+const SWIPE_THRESHOLD_PX = 60;
+
 export function Lightbox({
   slug,
   items,
@@ -30,10 +33,12 @@ export function Lightbox({
   const [webUrl, setWebUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState(false);
-  const touchStartX = useRef<number | null>(null);
+  const [swipeHint, setSwipeHint] = useState(false);
+  const swipeStartX = useRef<number | null>(null);
 
   const current = items[index];
   const canDelete = Boolean(current?.canDelete && onDelete);
+  const canSwipe = items.length > 1;
 
   const loadWebUrl = useCallback(async () => {
     if (!current) return;
@@ -64,13 +69,18 @@ export function Lightbox({
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
       if (event.key === "Escape") onClose();
-      if (event.key === "ArrowLeft") setIndex((i) => Math.max(0, i - 1));
-      if (event.key === "ArrowRight")
-        setIndex((i) => Math.min(items.length - 1, i + 1));
     }
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [items.length, onClose]);
+  }, [onClose]);
+
+  useEffect(() => {
+    if (!canSwipe || loading || !webUrl) return;
+
+    setSwipeHint(true);
+    const timer = window.setTimeout(() => setSwipeHint(false), 700);
+    return () => window.clearTimeout(timer);
+  }, [canSwipe, index, loading, webUrl]);
 
   function goPrev() {
     setIndex((i) => Math.max(0, i - 1));
@@ -78,6 +88,16 @@ export function Lightbox({
 
   function goNext() {
     setIndex((i) => Math.min(items.length - 1, i + 1));
+  }
+
+  function handleSwipeEnd(endX: number) {
+    const start = swipeStartX.current;
+    swipeStartX.current = null;
+    if (start == null) return;
+
+    const delta = endX - start;
+    if (delta > SWIPE_THRESHOLD_PX) goPrev();
+    if (delta < -SWIPE_THRESHOLD_PX) goNext();
   }
 
   async function handleDelete() {
@@ -113,31 +133,30 @@ export function Lightbox({
       </div>
 
       <div
-        className="relative flex flex-1 items-center justify-center px-4"
+        className="relative flex flex-1 touch-pan-y items-center justify-center px-4"
         onTouchStart={(e) => {
-          touchStartX.current = e.touches[0]?.clientX ?? null;
+          swipeStartX.current = e.touches[0]?.clientX ?? null;
         }}
         onTouchEnd={(e) => {
-          const start = touchStartX.current;
-          const end = e.changedTouches[0]?.clientX;
-          if (start == null || end == null) return;
-          const delta = end - start;
-          if (delta > 60) goPrev();
-          if (delta < -60) goNext();
+          handleSwipeEnd(e.changedTouches[0]?.clientX ?? 0);
+        }}
+        onPointerDown={(e) => {
+          if (e.pointerType === "mouse") {
+            swipeStartX.current = e.clientX;
+          }
+        }}
+        onPointerUp={(e) => {
+          if (e.pointerType === "mouse") {
+            handleSwipeEnd(e.clientX);
+          }
         }}
       >
-        {index > 0 ? (
-          <button
-            type="button"
-            onClick={goPrev}
-            className="absolute left-2 z-10 rounded-full bg-black/40 p-2 text-ivory-50"
-            aria-label="Previous photo"
-          >
-            <ChevronLeft className="size-6" />
-          </button>
-        ) : null}
-
-        <div className="relative h-full max-h-[75vh] w-full max-w-3xl">
+        <div
+          className={cn(
+            "relative h-full max-h-[75vh] w-full max-w-3xl",
+            swipeHint && "lightbox-swipe-hint",
+          )}
+        >
           {loading || !webUrl ? (
             <div className="flex h-full min-h-[40vh] items-center justify-center text-ivory-50">
               {deleting ? "Deleting…" : "Loading…"}
@@ -147,23 +166,13 @@ export function Lightbox({
               src={webUrl}
               alt=""
               fill
-              className="object-contain"
+              className="pointer-events-none object-contain select-none"
               sizes="100vw"
               unoptimized
+              draggable={false}
             />
           )}
         </div>
-
-        {index < items.length - 1 ? (
-          <button
-            type="button"
-            onClick={goNext}
-            className="absolute right-2 z-10 rounded-full bg-black/40 p-2 text-ivory-50"
-            aria-label="Next photo"
-          >
-            <ChevronRight className="size-6" />
-          </button>
-        ) : null}
       </div>
 
       {canDelete ? (
