@@ -102,27 +102,14 @@ export function Lightbox({
         <span className="text-sm text-ivory-50">
           {index + 1} / {items.length}
         </span>
-        <div className="flex items-center gap-1">
-          {canDelete ? (
-            <button
-              type="button"
-              onClick={() => void handleDelete()}
-              disabled={deleting}
-              className="rounded-lg p-2 text-ivory-50 hover:bg-white/10 disabled:opacity-50"
-              aria-label="Delete photo"
-            >
-              <Trash2 className="size-6" />
-            </button>
-          ) : null}
-          <button
-            type="button"
-            onClick={onClose}
-            className="rounded-lg p-2 text-ivory-50 hover:bg-white/10"
-            aria-label="Close lightbox"
-          >
-            <X className="size-6" />
-          </button>
-        </div>
+        <button
+          type="button"
+          onClick={onClose}
+          className="rounded-lg p-2 text-ivory-50 hover:bg-white/10"
+          aria-label="Close lightbox"
+        >
+          <X className="size-6" />
+        </button>
       </div>
 
       <div
@@ -180,14 +167,14 @@ export function Lightbox({
       </div>
 
       {canDelete ? (
-        <div className="border-t border-white/10 px-4 py-3">
+        <div className="flex justify-center border-t border-white/10 px-4 py-2">
           <button
             type="button"
             onClick={() => void handleDelete()}
             disabled={deleting}
-            className="flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-rose-600 text-base font-medium text-white hover:bg-rose-700 disabled:opacity-50"
+            className="inline-flex items-center justify-center gap-2 rounded-lg bg-rose-600 px-5 py-2.5 text-base font-medium text-white hover:bg-rose-700 disabled:opacity-50"
           >
-            <Trash2 className="size-5" aria-hidden />
+            <Trash2 className="size-5 shrink-0" aria-hidden />
             {deleting ? "Deleting…" : "Delete photo"}
           </button>
         </div>
