@@ -352,7 +352,9 @@ export function UploadPageClient({ slug, event }: UploadPageClientProps) {
           files.reduce((sum, f) => sum + f.progress, 0) / files.length,
         );
 
-  const atPhotoLimit = files.length >= MAX_PHOTOS_PER_BATCH;
+  const batchPhotoCount =
+    files.length + (pendingPreview?.items.length ?? 0);
+  const atPhotoLimit = batchPhotoCount >= MAX_PHOTOS_PER_BATCH;
 
   return (
     <div className="mx-auto max-w-lg px-4 py-6 pb-28">
@@ -378,7 +380,7 @@ export function UploadPageClient({ slug, event }: UploadPageClientProps) {
           Upload Photos
         </h1>
         <p className="mt-1 text-sm font-medium text-charcoal-900">
-          {files.length}/{MAX_PHOTOS_PER_BATCH} photos uploaded this batch
+          {batchPhotoCount}/{MAX_PHOTOS_PER_BATCH} photos in this batch
         </p>
       </header>
 
