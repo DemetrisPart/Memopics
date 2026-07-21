@@ -100,6 +100,17 @@ export function getRedirectTarget(
   return `${targetOrigin}${pathname}${window.location.search}`;
 }
 
+const PROBE_DONE_KEY = "memopics_network_probe_done";
+
+export function hasCachedNetworkProbe(): boolean {
+  if (typeof window === "undefined") return false;
+  return sessionStorage.getItem(PROBE_DONE_KEY) === "1";
+}
+
+export function markNetworkProbeDone(): void {
+  sessionStorage.setItem(PROBE_DONE_KEY, "1");
+}
+
 export async function ensureMobileNetworkRoute(
   pathname: string,
 ): Promise<NetworkMode | null> {
@@ -114,5 +125,6 @@ export async function ensureMobileNetworkRoute(
     return mode;
   }
 
+  markNetworkProbeDone();
   return mode;
 }

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import {
   ensureMobileNetworkRoute,
+  hasCachedNetworkProbe,
   isMobileNetworkConfigured,
 } from "@/lib/mobile-network";
 
@@ -13,7 +14,10 @@ export function MobileNetworkBootstrap({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
-  const [ready, setReady] = useState(() => !isMobileNetworkConfigured());
+  const [ready, setReady] = useState(() => {
+    if (!isMobileNetworkConfigured()) return true;
+    return hasCachedNetworkProbe();
+  });
 
   useEffect(() => {
     if (!isMobileNetworkConfigured()) return;
@@ -24,13 +28,17 @@ export function MobileNetworkBootstrap({
     })();
   }, [pathname]);
 
-  if (!ready) {
-    return (
-      <div className="flex min-h-dvh items-center justify-center text-stone-400">
-        Connecting…
-      </div>
-    );
-  }
-
-  return <>{children}</>;
+  return (
+    <>
+      {children}
+      {!ready ? (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-ivory-50/90 text-stone-400"
+          aria-live="polite"
+        >
+          Connecting…
+        </div>
+      ) : null}
+    </>
+  );
 }

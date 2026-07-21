@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -45,6 +44,9 @@ type PendingPreview = {
   files: File[];
   urls: string[];
 };
+
+/** Limit decoded thumbnails on mobile — full set stays in memory as File refs only. */
+const PREVIEW_THUMB_LIMIT = 6;
 
 export function UploadPageClient({ slug, event }: UploadPageClientProps) {
   const router = useRouter();
@@ -143,7 +145,9 @@ export function UploadPageClient({ slug, event }: UploadPageClientProps) {
     clearPendingPreview();
     setPendingPreview({
       files: accepted,
-      urls: accepted.map((file) => URL.createObjectURL(file)),
+      urls: accepted
+        .slice(0, PREVIEW_THUMB_LIMIT)
+        .map((file) => URL.createObjectURL(file)),
     });
   }
 
@@ -159,6 +163,9 @@ export function UploadPageClient({ slug, event }: UploadPageClientProps) {
 
   async function confirmAndUpload() {
     if (!pendingPreview || uploading) return;
+
+    setUploading(true);
+    setError(null);
 
     const newFiles: UploadFileState[] = pendingPreview.files.map((file) => ({
       clientFileId: randomId(),
@@ -181,10 +188,11 @@ export function UploadPageClient({ slug, event }: UploadPageClientProps) {
     allFiles: UploadFileState[],
     targets: UploadFileState[],
   ) {
-    if (targets.length === 0 || uploading) return;
+    if (targets.length === 0) return;
 
     if (event.storageUsedPercent >= 100) {
       setError("The gallery is full. The hosts have been notified.");
+      setUploading(false);
       return;
     }
 
@@ -422,21 +430,28 @@ export function UploadPageClient({ slug, event }: UploadPageClientProps) {
                 : `Upload ${pendingPreview.files.length} photos?`}
             </p>
             <div className="mt-3 grid grid-cols-3 gap-2">
-              {pendingPreview.urls.map((url, index) => (
+              {pendingPreview.urls.map((url) => (
                 <div
                   key={url}
                   className="relative aspect-square overflow-hidden rounded-lg bg-ivory-100"
                 >
-                  <Image
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
                     src={url}
                     alt=""
-                    fill
-                    className="object-cover"
-                    sizes="33vw"
-                    unoptimized
+                    className="size-full object-cover"
+                    loading="lazy"
+                    decoding="async"
                   />
                 </div>
               ))}
+              {pendingPreview.files.length > PREVIEW_THUMB_LIMIT ? (
+                <div className="flex aspect-square items-center justify-center rounded-lg bg-charcoal-800/5">
+                  <span className="text-sm font-medium text-charcoal-900">
+                    +{pendingPreview.files.length - PREVIEW_THUMB_LIMIT}
+                  </span>
+                </div>
+              ) : null}
             </div>
             <div className="mt-4 flex gap-3">
               <Button
@@ -444,6 +459,7 @@ export function UploadPageClient({ slug, event }: UploadPageClientProps) {
                 fullWidth
                 className="min-h-12"
                 onClick={cancelPreview}
+                disabled={uploading}
               >
                 <X className="size-4" aria-hidden />
                 Cancel
@@ -451,6 +467,7 @@ export function UploadPageClient({ slug, event }: UploadPageClientProps) {
               <Button
                 fullWidth
                 className="min-h-12"
+                disabled={uploading}
                 onClick={() => void confirmAndUpload()}
               >
                 Upload
