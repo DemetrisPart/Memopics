@@ -20,7 +20,8 @@ type LightboxProps = {
   onDelete?: (mediaId: string) => Promise<void>;
 };
 
-const SWIPE_THRESHOLD_PX = 60;
+const SWIPE_COMMIT_PX = 72;
+const SWIPE_EXIT_MS = 240;
 
 export function Lightbox({
   slug,
@@ -34,7 +35,11 @@ export function Lightbox({
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState(false);
   const [swipeHint, setSwipeHint] = useState(false);
-  const swipeStartX = useRef<number | null>(null);
+  const [dragX, setDragX] = useState(0);
+  const [dragging, setDragging] = useState(false);
+  const startXRef = useRef(0);
+  const dragXRef = useRef(0);
+  const swipeAreaRef = useRef<HTMLDivElement>(null);
 
   const current = items[index];
   const canDelete = Boolean(current?.canDelete && onDelete);
@@ -67,6 +72,11 @@ export function Lightbox({
   }, [items.length, onClose]);
 
   useEffect(() => {
+    setDragX(0);
+    dragXRef.current = 0;
+  }, [index]);
+
+  useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
       if (event.key === "Escape") onClose();
     }
@@ -75,29 +85,65 @@ export function Lightbox({
   }, [onClose]);
 
   useEffect(() => {
-    if (!canSwipe || loading || !webUrl) return;
+    if (!canSwipe || loading || !webUrl || dragging) return;
 
     setSwipeHint(true);
-    const timer = window.setTimeout(() => setSwipeHint(false), 700);
+    const timer = window.setTimeout(() => setSwipeHint(false), 1100);
     return () => window.clearTimeout(timer);
-  }, [canSwipe, index, loading, webUrl]);
+  }, [canSwipe, dragging, index, loading, webUrl]);
 
-  function goPrev() {
-    setIndex((i) => Math.max(0, i - 1));
+  function applyEdgeResistance(delta: number): number {
+    if (index === 0 && delta > 0) return delta * 0.22;
+    if (index === items.length - 1 && delta < 0) return delta * 0.22;
+    return delta;
   }
 
-  function goNext() {
-    setIndex((i) => Math.min(items.length - 1, i + 1));
+  function beginDrag(clientX: number) {
+    if (!canSwipe || loading || deleting) return;
+    setSwipeHint(false);
+    setDragging(true);
+    startXRef.current = clientX;
+    dragXRef.current = 0;
+    setDragX(0);
   }
 
-  function handleSwipeEnd(endX: number) {
-    const start = swipeStartX.current;
-    swipeStartX.current = null;
-    if (start == null) return;
+  function moveDrag(clientX: number) {
+    if (!dragging) return;
+    const delta = applyEdgeResistance(clientX - startXRef.current);
+    dragXRef.current = delta;
+    setDragX(delta);
+  }
 
-    const delta = endX - start;
-    if (delta > SWIPE_THRESHOLD_PX) goPrev();
-    if (delta < -SWIPE_THRESHOLD_PX) goNext();
+  function finishDrag() {
+    if (!dragging) return;
+    setDragging(false);
+
+    const delta = dragXRef.current;
+    const exitDistance =
+      typeof window !== "undefined" ? window.innerWidth * 0.35 : 320;
+
+    if (delta > SWIPE_COMMIT_PX && index > 0) {
+      setDragX(exitDistance);
+      window.setTimeout(() => {
+        setIndex((i) => Math.max(0, i - 1));
+        setDragX(0);
+        dragXRef.current = 0;
+      }, SWIPE_EXIT_MS);
+      return;
+    }
+
+    if (delta < -SWIPE_COMMIT_PX && index < items.length - 1) {
+      setDragX(-exitDistance);
+      window.setTimeout(() => {
+        setIndex((i) => Math.min(items.length - 1, i + 1));
+        setDragX(0);
+        dragXRef.current = 0;
+      }, SWIPE_EXIT_MS);
+      return;
+    }
+
+    setDragX(0);
+    dragXRef.current = 0;
   }
 
   async function handleDelete() {
@@ -116,6 +162,9 @@ export function Lightbox({
     }
   }
 
+  const dragRotate = dragX * 0.025;
+  const dragOpacity = 1 - Math.min(Math.abs(dragX) / 520, 0.12);
+
   return (
     <div className="fixed inset-0 z-50 flex flex-col bg-charcoal-900">
       <div className="flex items-center justify-between px-4 py-3">
@@ -133,45 +182,49 @@ export function Lightbox({
       </div>
 
       <div
-        className="relative flex flex-1 touch-pan-y items-center justify-center px-4"
-        onTouchStart={(e) => {
-          swipeStartX.current = e.touches[0]?.clientX ?? null;
-        }}
-        onTouchEnd={(e) => {
-          handleSwipeEnd(e.changedTouches[0]?.clientX ?? 0);
-        }}
+        ref={swipeAreaRef}
+        className="relative flex flex-1 items-center justify-center px-4 touch-none select-none"
         onPointerDown={(e) => {
-          if (e.pointerType === "mouse") {
-            swipeStartX.current = e.clientX;
-          }
+          if (e.button !== 0) return;
+          swipeAreaRef.current?.setPointerCapture(e.pointerId);
+          beginDrag(e.clientX);
         }}
-        onPointerUp={(e) => {
-          if (e.pointerType === "mouse") {
-            handleSwipeEnd(e.clientX);
-          }
-        }}
+        onPointerMove={(e) => moveDrag(e.clientX)}
+        onPointerUp={() => finishDrag()}
+        onPointerCancel={() => finishDrag()}
       >
         <div
           className={cn(
             "relative h-full max-h-[75vh] w-full max-w-3xl",
-            swipeHint && "lightbox-swipe-hint",
+            swipeHint && !dragging && dragX === 0 && "lightbox-swipe-hint",
           )}
         >
-          {loading || !webUrl ? (
-            <div className="flex h-full min-h-[40vh] items-center justify-center text-ivory-50">
-              {deleting ? "Deleting…" : "Loading…"}
-            </div>
-          ) : (
-            <Image
-              src={webUrl}
-              alt=""
-              fill
-              className="pointer-events-none object-contain select-none"
-              sizes="100vw"
-              unoptimized
-              draggable={false}
-            />
-          )}
+          <div
+            className="relative size-full will-change-transform"
+            style={{
+              transform: `translate3d(${dragX}px, 0, 0) rotate(${dragRotate}deg)`,
+              opacity: dragOpacity,
+              transition: dragging
+                ? "none"
+                : `transform ${SWIPE_EXIT_MS}ms ease-out, opacity ${SWIPE_EXIT_MS}ms ease-out`,
+            }}
+          >
+            {loading || !webUrl ? (
+              <div className="flex h-full min-h-[40vh] items-center justify-center text-ivory-50">
+                {deleting ? "Deleting…" : "Loading…"}
+              </div>
+            ) : (
+              <Image
+                src={webUrl}
+                alt=""
+                fill
+                className="pointer-events-none object-contain select-none"
+                sizes="100vw"
+                unoptimized
+                draggable={false}
+              />
+            )}
+          </div>
         </div>
       </div>
 

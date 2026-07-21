@@ -62,27 +62,22 @@
   }
 
   @keyframes lightbox-swipe-hint {
-    0% {
-      transform: translateX(0) rotate(0deg);
-    }
-    18% {
-      transform: translateX(-12px) rotate(-2.5deg);
-    }
-    38% {
-      transform: translateX(12px) rotate(2.5deg);
-    }
-    58% {
-      transform: translateX(-6px) rotate(-1deg);
-    }
-    78% {
-      transform: translateX(6px) rotate(1deg);
-    }
+    0%,
     100% {
       transform: translateX(0) rotate(0deg);
+    }
+    30% {
+      transform: translateX(-4px) rotate(-0.5deg);
+    }
+    60% {
+      transform: translateX(4px) rotate(0.5deg);
+    }
+    85% {
+      transform: translateX(-1px) rotate(-0.15deg);
     }
   }
 
   .lightbox-swipe-hint {
-    animation: lightbox-swipe-hint 0.7s ease-out;
+    animation: lightbox-swipe-hint 1.1s ease-in-out;
   }
 }
