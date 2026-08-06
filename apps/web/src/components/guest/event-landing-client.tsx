@@ -1,14 +1,23 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Camera, ChevronRight, Images } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { EventHero } from "@/components/guest/event-hero";
 import { NameEntryModal } from "@/components/guest/name-entry-modal";
-import { PrivacyBadge } from "@/components/guest/privacy-badge";
+import { LandingAlbum } from "@/components/guest/designs/landing-album";
+import { LandingBento } from "@/components/guest/designs/landing-bento";
+import { LandingEditorial } from "@/components/guest/designs/landing-editorial";
+import { LandingGarden } from "@/components/guest/designs/landing-garden";
+import { LandingLetter } from "@/components/guest/designs/landing-letter";
+import { LandingLuxury } from "@/components/guest/designs/landing-luxury";
+import { LandingNeon } from "@/components/guest/designs/landing-neon";
+import { LandingOriginal } from "@/components/guest/designs/landing-original";
+import { LandingSplit } from "@/components/guest/designs/landing-split";
+import { LandingStories } from "@/components/guest/designs/landing-stories";
+import { LandingTicket } from "@/components/guest/designs/landing-ticket";
+import { LandingWallet } from "@/components/guest/designs/landing-wallet";
 import { checkGuestSession } from "@/lib/api/client";
+import { useGuestTheme } from "@/lib/themes/theme-provider";
+import type { GuestThemeId } from "@/lib/themes/types";
 import type { PublicEvent } from "@/lib/api/types";
 
 type EventLandingClientProps = {
@@ -19,19 +28,14 @@ type EventLandingClientProps = {
 export function EventLandingClient({ slug, event }: EventLandingClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [hasSession, setHasSession] = useState<boolean | null>(null);
+  const { theme } = useGuestTheme();
   const [nameModalOpen, setNameModalOpen] = useState(false);
-  const [pendingAction, setPendingAction] = useState<"upload" | "gallery" | null>(
-    null,
-  );
+  const [pendingAction, setPendingAction] = useState<"upload" | "gallery" | null>(null);
 
   const refreshSession = useCallback(async () => {
     try {
-      const active = await checkGuestSession(slug);
-      setHasSession(active);
-      return active;
+      return await checkGuestSession(slug);
     } catch {
-      setHasSession(false);
       return false;
     }
   }, [slug]);
@@ -65,83 +69,73 @@ export function EventLandingClient({ slug, event }: EventLandingClientProps) {
   }
 
   function handleNameSuccess() {
-    setHasSession(true);
     setNameModalOpen(false);
-
-    if (pendingAction === "upload") {
-      router.push(`/${slug}/upload`);
-    } else if (pendingAction === "gallery") {
-      router.push(`/${slug}/gallery`);
-    }
+    if (pendingAction === "upload") router.push(`/${slug}/upload`);
+    else if (pendingAction === "gallery") router.push(`/${slug}/gallery`);
     setPendingAction(null);
   }
 
   function handleModalClose() {
     setNameModalOpen(false);
     setPendingAction(null);
-    if (searchParams.get("action")) {
-      router.replace(`/${slug}`);
-    }
+    if (searchParams.get("action")) router.replace(`/${slug}`);
+  }
+
+  const designProps = {
+    slug,
+    event,
+    onUpload: () => void navigateWithSession("upload"),
+    onGallery: () => void navigateWithSession("gallery"),
+  };
+
+  let content;
+  switch (theme as GuestThemeId) {
+    case "garden":
+      content = <LandingGarden {...designProps} />;
+      break;
+    case "ticket":
+      content = <LandingTicket {...designProps} />;
+      break;
+    case "stories":
+      content = <LandingStories {...designProps} />;
+      break;
+    case "wallet":
+      content = <LandingWallet {...designProps} />;
+      break;
+    case "bento":
+      content = <LandingBento {...designProps} />;
+      break;
+    case "letter":
+      content = <LandingLetter {...designProps} />;
+      break;
+    case "neon":
+      content = <LandingNeon {...designProps} />;
+      break;
+    case "split":
+      content = <LandingSplit {...designProps} />;
+      break;
+    case "luxury":
+      content = <LandingLuxury {...designProps} />;
+      break;
+    case "album":
+      content = <LandingAlbum {...designProps} />;
+      break;
+    case "editorial":
+      content = <LandingEditorial {...designProps} />;
+      break;
+    default:
+      content = <LandingOriginal {...designProps} />;
   }
 
   return (
-    <div className="guest-page-bg min-h-dvh">
-      <EventHero event={event} />
-
-      <section className="relative mx-auto max-w-lg px-6 pb-10 pt-4">
-        <div className="glass-card rounded-3xl p-6">
-          <p className="text-center text-[15px] leading-relaxed text-stone-400">
-            Share your favourite moments from this celebration.
-          </p>
-
-          <div className="mt-6 space-y-3">
-            <Button
-              fullWidth
-              className="min-h-[3.5rem] text-base"
-              onClick={() => void navigateWithSession("upload")}
-            >
-              <Camera className="size-5" aria-hidden />
-              Upload Photos
-              <ChevronRight className="ml-auto size-4 opacity-60" aria-hidden />
-            </Button>
-
-            <Button
-              variant="secondary"
-              fullWidth
-              className="min-h-12"
-              onClick={() => void navigateWithSession("gallery")}
-            >
-              <Images className="size-5" aria-hidden />
-              View Gallery
-              <ChevronRight className="ml-auto size-4 opacity-40" aria-hidden />
-            </Button>
-          </div>
-        </div>
-
-        <div className="mt-6 flex justify-center">
-          <PrivacyBadge privacyMode={event.privacyMode} />
-        </div>
-
-        <footer className="mt-10 text-center">
-          <p className="text-[11px] uppercase tracking-[0.15em] text-stone-400">
-            Powered by{" "}
-            <Link
-              href="/"
-              className="font-medium text-gold-600 underline-offset-2 hover:underline"
-            >
-              Memopics
-            </Link>
-          </p>
-        </footer>
-      </section>
-
+    <>
+      {content}
       <NameEntryModal
         slug={slug}
         open={nameModalOpen}
         onClose={handleModalClose}
         onSuccess={handleNameSuccess}
       />
-    </div>
+    </>
   );
 }
-

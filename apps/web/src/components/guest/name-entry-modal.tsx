@@ -114,7 +114,7 @@ export function NameEntryModal({
               onChange={(e) => setLastName(e.target.value)}
               autoComplete="family-name"
               disabled={loading}
-              placeholder="Papadopoulos"
+              placeholder="Papadopoulou"
             />
 
             {error ? (

@@ -115,7 +115,7 @@ export class EventsService {
       include: { coverImage: true },
     });
 
-    return events.map((event) => this.serializeEvent(event));
+    return Promise.all(events.map((event) => this.serializeEvent(event)));
   }
 
   async getEventById(eventId: string, ownerUserId: string) {

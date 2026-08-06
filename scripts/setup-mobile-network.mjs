@@ -41,11 +41,20 @@ let content = readFileSync(ENV_PATH, "utf8");
 let changed = false;
 
 for (const [key, value] of Object.entries(ENTRIES)) {
-  if (content.includes(`${key}=`)) continue;
-  const suffix = content.endsWith("\n") || content.length === 0 ? "" : "\n";
-  content = `${content}${suffix}${key}=${value}\n`;
-  changed = true;
-  console.log(`Added ${key}`);
+  const pattern = new RegExp(`^${key}=.*$`, "m");
+  if (pattern.test(content)) {
+    const next = content.replace(pattern, `${key}=${value}`);
+    if (next !== content) {
+      content = next;
+      changed = true;
+      console.log(`Updated ${key}`);
+    }
+  } else {
+    const suffix = content.endsWith("\n") || content.length === 0 ? "" : "\n";
+    content = `${content}${suffix}${key}=${value}\n`;
+    changed = true;
+    console.log(`Added ${key}`);
+  }
 }
 
 if (changed) {

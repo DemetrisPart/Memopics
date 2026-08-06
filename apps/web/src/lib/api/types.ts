@@ -93,3 +93,63 @@ export class ApiError extends Error {
     this.name = "ApiError";
   }
 }
+
+export type AuthUser = {
+  id: string;
+  email: string;
+  role: string;
+  emailVerifiedAt: string | null;
+  createdAt: string;
+};
+
+export type CoupleEvent = {
+  id: string;
+  slug: string;
+  title: string;
+  brideName: string;
+  groomName: string;
+  eventDate: string;
+  status: string;
+  privacyMode: PrivacyMode;
+  showGuestNamesPublicly: boolean;
+  storageUsedBytes: string;
+  storageLimitBytes: string;
+  coverImageMediaId: string | null;
+  coverImageUrl: string | null;
+  publicUrl: string;
+  qrToken?: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type EventStats = {
+  photoCount: number;
+  videoCount: number;
+  storageUsedBytes: string;
+  storageLimitBytes: string;
+  storageUsedPercent: number;
+};
+
+export type EventQrPayload = {
+  slug: string;
+  eventUrl: string;
+  qrCodePngBase64: string;
+};
+
+export type CoupleGalleryItem = {
+  id: string;
+  thumbUrl: string | null;
+  thumbUrlLan?: string | null;
+  thumbUrlPublic?: string | null;
+  width: number | null;
+  height: number | null;
+  createdAt: string;
+  guestName: string;
+  canDelete: boolean;
+};
+
+export type CoupleGalleryResponse = {
+  items: CoupleGalleryItem[];
+  nextCursor: string | null;
+  totalCount: number;
+};

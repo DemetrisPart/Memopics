@@ -1,0 +1,455 @@
+/* ─── Luxury (venue-grade, sticky bar) ─── */
+.design-luxury {
+  background: #faf9f7;
+  color: #1c1917;
+  padding-bottom: 5.5rem;
+}
+
+.design-luxury-hero {
+  position: relative;
+  min-height: 72vh;
+  overflow: hidden;
+}
+
+.design-luxury-hero img {
+  animation: real-ken-burns 24s ease-out forwards;
+}
+
+@keyframes real-ken-burns {
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(1.06);
+  }
+}
+
+.design-luxury-scrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    rgb(28 25 23 / 15%) 0%,
+    transparent 35%,
+    rgb(28 25 23 / 55%) 75%,
+    rgb(28 25 23 / 88%) 100%
+  );
+  pointer-events: none;
+}
+
+.design-luxury-hero-copy {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 2rem 1.5rem 2.5rem;
+  text-align: center;
+}
+
+.design-luxury-eyebrow {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: rgb(253 251 247 / 65%);
+}
+
+.design-luxury-names {
+  margin-top: 0.625rem;
+  color: #fdfbf7;
+  text-shadow: 0 2px 24px rgb(0 0 0 / 45%);
+}
+
+.design-luxury-names .text-charcoal-900 {
+  color: rgb(253 251 247 / 75%);
+}
+
+.design-luxury-meta {
+  display: flex;
+  justify-content: center;
+  margin-top: 1rem;
+}
+
+.design-luxury-meta-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.375rem 0.875rem;
+  border-radius: 9999px;
+  background: rgb(253 251 247 / 12%);
+  backdrop-filter: blur(8px);
+  font-size: 0.8125rem;
+  color: rgb(253 251 247 / 85%);
+}
+
+.design-luxury-body {
+  max-width: 24rem;
+  margin: 0 auto;
+  padding: 1.75rem 1.5rem 1rem;
+}
+
+.design-luxury-lead {
+  font-size: 0.9375rem;
+  line-height: 1.65;
+  color: #57534e;
+}
+
+.design-luxury-sticky {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 40;
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem calc(0.75rem + env(safe-area-inset-bottom));
+  border-top: 1px solid rgb(28 25 23 / 8%);
+  background: rgb(253 251 247 / 92%);
+  backdrop-filter: blur(16px);
+  box-shadow: 0 -8px 32px rgb(28 25 23 / 8%);
+}
+
+.design-luxury-sticky-primary {
+  display: inline-flex;
+  flex: 1;
+  min-height: 3rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border: none;
+  border-radius: 0.75rem;
+  background: #1c1917;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #faf9f7;
+  cursor: pointer;
+}
+
+.design-luxury-sticky-secondary {
+  display: inline-flex;
+  flex: 1;
+  min-height: 3rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  border: 1px solid rgb(28 25 23 / 12%);
+  border-radius: 0.75rem;
+  background: #fff;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #1c1917;
+  cursor: pointer;
+}
+
+/* ─── Album (shared photos app) ─── */
+.design-album {
+  background: #f2f2f7;
+  color: #1c1c1e;
+  padding-bottom: 1.5rem;
+}
+
+.design-album-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1rem 0.75rem;
+  background: #fff;
+  border-bottom: 1px solid rgb(60 60 67 / 12%);
+}
+
+.design-album-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #8e8e93;
+}
+
+.design-album-title {
+  margin-top: 0.125rem;
+  color: #1c1c1e;
+}
+
+.design-album-date {
+  margin-top: 0.125rem;
+  font-size: 0.8125rem;
+  color: #8e8e93;
+}
+
+.design-album-avatars {
+  display: flex;
+}
+
+.design-album-avatars span {
+  display: flex;
+  width: 2rem;
+  height: 2rem;
+  align-items: center;
+  justify-content: center;
+  margin-left: -0.5rem;
+  border: 2px solid #fff;
+  border-radius: 9999px;
+  background: #e5e5ea;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  color: #636366;
+}
+
+.design-album-avatars span:first-child {
+  margin-left: 0;
+  background: #d1d1d6;
+}
+
+.design-album-stats {
+  padding: 0.75rem 1rem;
+  background: #fff;
+  border-bottom: 1px solid rgb(60 60 67 / 12%);
+}
+
+.design-album-stat {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: #636366;
+}
+
+.design-album-storage {
+  margin-top: 0.625rem;
+}
+
+.design-album-storage-track {
+  height: 4px;
+  overflow: hidden;
+  border-radius: 9999px;
+  background: #e5e5ea;
+}
+
+.design-album-storage-fill {
+  height: 100%;
+  border-radius: 9999px;
+  background: linear-gradient(90deg, #007aff, #5856d6);
+  transition: width 0.4s ease;
+}
+
+.design-album-storage-label {
+  display: block;
+  margin-top: 0.375rem;
+  font-size: 0.6875rem;
+  color: #8e8e93;
+}
+
+.design-album-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 6.5rem);
+  gap: 2px;
+  padding: 2px;
+  background: #fff;
+}
+
+.design-album-cell {
+  position: relative;
+  overflow: hidden;
+  background: #e5e5ea;
+}
+
+.design-album-cell-hero {
+  grid-row: span 2;
+  grid-column: span 2;
+}
+
+.design-album-placeholder {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #e5e5ea, #d1d1d6);
+}
+
+.design-album-more {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: rgb(0 0 0 / 45%);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #fff;
+  cursor: pointer;
+}
+
+.design-album-panel {
+  margin: 0.75rem 1rem 0;
+  padding: 1rem;
+  border-radius: 1rem;
+  background: #fff;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 6%);
+}
+
+.design-album-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.design-album-upload {
+  display: flex;
+  min-height: 3rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border: none;
+  border-radius: 0.75rem;
+  background: #007aff;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #fff;
+  cursor: pointer;
+}
+
+.design-album-gallery {
+  display: flex;
+  min-height: 2.75rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border: none;
+  border-radius: 0.75rem;
+  background: #f2f2f7;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #007aff;
+  cursor: pointer;
+}
+
+/* ─── Editorial (magazine cover) ─── */
+.design-editorial {
+  background: #fff;
+  color: #111;
+}
+
+.design-editorial-masthead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding: 1rem 1.25rem 0.75rem;
+  border-bottom: 2px solid #111;
+  font-size: 0.6875rem;
+  font-weight: 800;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+
+.design-editorial-vol {
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  color: #666;
+}
+
+.design-editorial-cover {
+  position: relative;
+  aspect-ratio: 4 / 5;
+  max-height: 68vh;
+  overflow: hidden;
+}
+
+.design-editorial-cover-scrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgb(0 0 0 / 75%) 0%, transparent 55%);
+  pointer-events: none;
+}
+
+.design-editorial-headline {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 1.5rem 1.25rem;
+}
+
+.design-editorial-kicker {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgb(255 255 255 / 65%);
+}
+
+.design-editorial-names {
+  margin-top: 0.5rem;
+  color: #fff;
+  text-align: left !important;
+}
+
+.design-editorial-names .text-charcoal-900 {
+  color: rgb(255 255 255 / 70%) !important;
+}
+
+.design-editorial-body {
+  max-width: 28rem;
+  margin: 0 auto;
+  padding: 1.5rem 1.25rem 2rem;
+}
+
+.design-editorial-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid #111;
+}
+
+.design-editorial-caption-label {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #888;
+}
+
+.design-editorial-caption {
+  margin-top: 0.25rem;
+  font-size: 0.9375rem;
+  font-weight: 600;
+}
+
+.design-editorial-deck {
+  margin-top: 1.25rem;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1.0625rem;
+  line-height: 1.65;
+  color: #333;
+}
+
+.design-editorial-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  border-top: 1px solid #111;
+}
+
+.design-editorial-cta {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.125rem 0;
+  border: none;
+  border-bottom: 1px solid #ddd;
+  background: none;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: #111;
+  cursor: pointer;
+}
+
+.design-editorial-cta-muted {
+  color: #555;
+  font-weight: 600;
+}

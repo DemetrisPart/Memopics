@@ -191,6 +191,154 @@ export class GalleryService {
       throw new NotFoundException("Media not found");
     }
 
+    await this.softDeleteMedia(event.id, event.coverImageMediaId, media);
+    return { deleted: true as const, mediaId: media.id };
+  }
+
+  async listCoupleGallery(
+    eventId: string,
+    options: { cursor?: string; limit?: number },
+  ) {
+    const limit = options.limit ?? DEFAULT_GALLERY_LIMIT;
+    const cursor = options.cursor
+      ? this.decodeCursor(options.cursor)
+      : undefined;
+
+    const where: Prisma.MediaAssetWhereInput = {
+      eventId,
+      deletedAt: null,
+      status: MediaAssetStatus.ACTIVE,
+      type: MediaAssetType.PHOTO,
+    };
+
+    const totalCount = await this.prisma.mediaAsset.count({ where });
+
+    const pageWhere: Prisma.MediaAssetWhereInput = cursor
+      ? {
+          ...where,
+          OR: [
+            { createdAt: { lt: new Date(cursor.createdAt) } },
+            {
+              createdAt: new Date(cursor.createdAt),
+              id: { lt: cursor.id },
+            },
+          ],
+        }
+      : where;
+
+    const media = await this.prisma.mediaAsset.findMany({
+      where: pageWhere,
+      include: {
+        variants: true,
+        guestSession: {
+          select: { firstName: true, lastName: true },
+        },
+      },
+      orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+      take: limit + 1,
+    });
+
+    const hasMore = media.length > limit;
+    const page = hasMore ? media.slice(0, limit) : media;
+
+    const items = await Promise.all(
+      page.map((asset) => this.serializeCoupleGalleryItem(asset)),
+    );
+
+    const lastItem = page.at(-1);
+    const nextCursor =
+      hasMore && lastItem
+        ? this.encodeCursor({
+            createdAt: lastItem.createdAt.toISOString(),
+            id: lastItem.id,
+          })
+        : null;
+
+    return { items, nextCursor, totalCount };
+  }
+
+  async getCoupleMediaUrl(
+    eventId: string,
+    mediaId: string,
+    variant: "thumb" | "web" = "web",
+  ) {
+    const media = await this.prisma.mediaAsset.findFirst({
+      where: {
+        id: mediaId,
+        eventId,
+        deletedAt: null,
+        status: MediaAssetStatus.ACTIVE,
+        type: MediaAssetType.PHOTO,
+      },
+      include: { variants: true },
+    });
+
+    if (!media) {
+      throw new NotFoundException("Media not found");
+    }
+
+    const variantType =
+      variant === "thumb" ? MediaVariantType.THUMB : MediaVariantType.WEB;
+    const mediaVariant = media.variants.find((v) => v.variant === variantType);
+
+    if (!mediaVariant) {
+      throw new NotFoundException("Media variant not available");
+    }
+
+    const urls = await this.storage.getPresignedDownloadUrls({
+      key: mediaVariant.storageKey,
+      expiresInSeconds: MVP_DEFAULTS.PRESIGNED_DOWNLOAD_TTL_SECONDS,
+    });
+
+    return {
+      url: urls.url,
+      urlLan: urls.lanUrl ?? null,
+      urlPublic: urls.publicUrl ?? null,
+      variant,
+      mediaId: media.id,
+      width: media.width,
+      height: media.height,
+    };
+  }
+
+  async deleteCoupleMedia(eventId: string, mediaId: string) {
+    const event = await this.prisma.event.findFirst({
+      where: { id: eventId, deletedAt: null },
+      select: { id: true, coverImageMediaId: true },
+    });
+
+    if (!event) {
+      throw new NotFoundException("Event not found");
+    }
+
+    const media = await this.prisma.mediaAsset.findFirst({
+      where: {
+        id: mediaId,
+        eventId: event.id,
+        deletedAt: null,
+        status: MediaAssetStatus.ACTIVE,
+        type: MediaAssetType.PHOTO,
+      },
+      include: { variants: true },
+    });
+
+    if (!media) {
+      throw new NotFoundException("Media not found");
+    }
+
+    await this.softDeleteMedia(event.id, event.coverImageMediaId, media);
+    return { deleted: true as const, mediaId: media.id };
+  }
+
+  private async softDeleteMedia(
+    eventId: string,
+    coverImageMediaId: string | null,
+    media: {
+      id: string;
+      originalSizeBytes: bigint;
+      variants: { sizeBytes: bigint }[];
+    },
+  ) {
     const bytesToFree =
       media.originalSizeBytes +
       media.variants.reduce(
@@ -210,17 +358,53 @@ export class GalleryService {
         },
       };
 
-      if (event.coverImageMediaId === media.id) {
+      if (coverImageMediaId === media.id) {
         eventUpdate.coverImage = { disconnect: true };
       }
 
       await tx.event.update({
-        where: { id: event.id },
+        where: { id: eventId },
         data: eventUpdate,
       });
     });
+  }
 
-    return { deleted: true as const, mediaId: media.id };
+  private async serializeCoupleGalleryItem(media: MediaWithVariants) {
+    const thumbVariant = media.variants.find(
+      (v) => v.variant === MediaVariantType.THUMB,
+    );
+
+    const thumbUrls = thumbVariant
+      ? await this.storage.getPresignedDownloadUrls({
+          key: thumbVariant.storageKey,
+          expiresInSeconds: MVP_DEFAULTS.PRESIGNED_DOWNLOAD_TTL_SECONDS,
+        })
+      : null;
+
+    return {
+      id: media.id,
+      thumbUrl: thumbUrls?.url ?? null,
+      thumbUrlLan: thumbUrls?.lanUrl ?? null,
+      thumbUrlPublic: thumbUrls?.publicUrl ?? null,
+      width: media.width,
+      height: media.height,
+      createdAt: media.createdAt.toISOString(),
+      guestName: this.formatCoupleGuestName(media),
+      canDelete: true,
+    };
+  }
+
+  private formatCoupleGuestName(media: MediaWithVariants): string {
+    if (!media.guestSession) {
+      return "Guest";
+    }
+
+    const { firstName, lastName } = media.guestSession;
+    if (lastName?.trim()) {
+      return `${firstName} ${lastName.trim()}`;
+    }
+
+    return firstName;
   }
 
   private buildGalleryWhere(

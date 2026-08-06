@@ -1,11 +1,8 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
-import { CoupleNamesHeading } from "@/components/guest/couple-names-heading";
-import { EventQrActions } from "@/components/guest/event-qr-actions";
+import { QrDesignClient } from "@/components/guest/designs/qr-design-client";
 import { fetchPublicEventQr } from "@/lib/api/client";
 import { ApiError } from "@/lib/api/types";
-import { formatEventDate } from "@/lib/utils";
 
 type PageProps = {
   params: Promise<{ slug: string }>;
@@ -37,55 +34,5 @@ export default async function EventQrPage({ params }: PageProps) {
     throw error;
   }
 
-  return (
-    <main className="guest-page-bg min-h-dvh px-4 py-8 print:bg-white print:py-4">
-      <div className="mx-auto max-w-md">
-        <div className="print:hidden">
-          <Link
-            href={`/${slug}`}
-            className="text-sm text-stone-400 hover:text-charcoal-800"
-          >
-            ← Back to event page
-          </Link>
-        </div>
-
-        <div className="mt-6 rounded-3xl border border-charcoal-800/10 bg-white p-8 text-center shadow-soft print:mt-0 print:border-0 print:shadow-none">
-          <p className="text-[11px] font-medium uppercase tracking-[0.2em] text-gold-600">
-            Scan to share photos
-          </p>
-          <CoupleNamesHeading
-            groomName={qr.groomName}
-            brideName={qr.brideName}
-            fallback={qr.title}
-            className="font-couple mt-3 text-[39px] leading-[1.02] text-charcoal-900 sm:text-[46px]"
-          />
-          <p className="mt-2 text-base text-stone-400">
-            {formatEventDate(qr.eventDate)}
-          </p>
-
-          <div className="mx-auto mt-8 inline-block rounded-2xl border border-stone-200 bg-white p-4">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={`data:image/png;base64,${qr.qrCodePngBase64}`}
-              alt={`QR code for ${qr.title}`}
-              width={256}
-              height={256}
-              className="size-64"
-            />
-          </div>
-
-          <p className="mt-6 text-sm leading-relaxed text-stone-400">
-            Guests scan this code with their phone camera — no app install
-            needed.
-          </p>
-
-          <EventQrActions slug={qr.slug} qrCodePngBase64={qr.qrCodePngBase64} />
-        </div>
-
-        <p className="mt-8 text-center text-[11px] uppercase tracking-[0.15em] text-stone-400 print:hidden">
-          Powered by Memopics
-        </p>
-      </div>
-    </main>
-  );
+  return <QrDesignClient slug={slug} qr={qr} />;
 }
