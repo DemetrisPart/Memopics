@@ -1,13 +1,20 @@
 "use client";
 
+import { cn } from "@/lib/utils";
+
 type EventQrActionsProps = {
   slug: string;
   qrCodePngBase64: string;
+  className?: string;
 };
 
-export function EventQrActions({ slug, qrCodePngBase64 }: EventQrActionsProps) {
+export function EventQrActions({
+  slug,
+  qrCodePngBase64,
+  className,
+}: EventQrActionsProps) {
   return (
-    <div className="mt-8 space-y-3 print:hidden">
+    <div className={cn("space-y-3 print:hidden", className)}>
       <a
         href={`data:image/png;base64,${qrCodePngBase64}`}
         download={`${slug}-qr.png`}

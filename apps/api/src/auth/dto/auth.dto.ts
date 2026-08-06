@@ -15,3 +15,15 @@ export class VerifyMagicLinkDto {
   @IsNotEmpty()
   token!: string;
 }
+
+export class ApproveMagicLinkDto {
+  @IsString()
+  @IsNotEmpty()
+  token!: string;
+}
+
+export class PollMagicLinkDto {
+  @IsString()
+  @IsNotEmpty()
+  pollToken!: string;
+}

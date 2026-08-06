@@ -1,6 +1,9 @@
-import { DashboardQrClient } from "@/components/dashboard/dashboard-qr-client";
-import { fetchEventQrServer } from "@/lib/api/server-fetch";
-import type { EventQrPayload } from "@/lib/api/types";
+import { OriginalQrPrintCard } from "@/components/guest/original-qr-print-card";
+import {
+  fetchEventServer,
+  fetchPublicEventQrServer,
+} from "@/lib/api/server-fetch";
+import type { PublicEventQr } from "@/lib/api/types";
 
 type QrPageProps = {
   params: Promise<{ id: string }>;
@@ -8,14 +11,21 @@ type QrPageProps = {
 
 export default async function EventQrPage({ params }: QrPageProps) {
   const { id } = await params;
-  const qr = (await fetchEventQrServer(id)) as EventQrPayload;
+  const event = await fetchEventServer(id);
+  const qr = (await fetchPublicEventQrServer(
+    event.slug,
+  )) as PublicEventQr;
 
   return (
     <div>
       <h2 className="mb-6 text-lg font-semibold text-charcoal-900">
         QR & sharing
       </h2>
-      <DashboardQrClient eventId={id} qr={qr} />
+      <div className="guest-page-bg rounded-2xl px-4 py-8 print:bg-white print:py-4">
+        <div className="mx-auto max-w-md">
+          <OriginalQrPrintCard qr={qr} />
+        </div>
+      </div>
     </div>
   );
 }

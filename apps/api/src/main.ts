@@ -24,7 +24,10 @@ async function bootstrap(): Promise<void> {
   );
   app.useGlobalFilters(new GlobalExceptionFilter(app.get(ConfigService)));
   app.enableCors({
-    origin: process.env.WEB_APP_URL ?? "http://localhost:3000",
+    origin: [
+      process.env.WEB_APP_URL ?? "http://localhost:3000",
+      process.env.NEXT_PUBLIC_MOBILE_LAN_ORIGIN,
+    ].filter((value): value is string => Boolean(value)),
     credentials: true,
   });
 

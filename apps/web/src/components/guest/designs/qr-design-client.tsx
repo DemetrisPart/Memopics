@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { OriginalQrPrintCard } from "@/components/guest/original-qr-print-card";
 import { CoupleNamesHeading } from "@/components/guest/couple-names-heading";
 import { EventQrActions } from "@/components/guest/event-qr-actions";
 import { useGuestTheme } from "@/lib/themes/theme-provider";
@@ -38,7 +39,11 @@ export function QrDesignClient({ slug, qr }: QrDesignClientProps) {
   );
 
   const meta = (
-    <EventQrActions slug={qr.slug} qrCodePngBase64={qr.qrCodePngBase64} />
+    <EventQrActions
+      slug={qr.slug}
+      qrCodePngBase64={qr.qrCodePngBase64}
+      className="mt-8"
+    />
   );
 
   if (theme === "garden") {
@@ -163,22 +168,11 @@ export function QrDesignClient({ slug, qr }: QrDesignClientProps) {
   }
 
   return (
-    <main className="guest-page-bg min-h-dvh px-4 py-8">
+    <main className="guest-page-bg min-h-dvh px-4 py-8 print:bg-white print:py-4">
       <div className="mx-auto max-w-md">
         {back}
-        <div className="design-qr-card design-qr-original mt-6 p-8 text-center">
-          <p className="text-[11px] font-medium uppercase tracking-[0.2em] text-gold-600">
-            Scan to share photos
-          </p>
-          <CoupleNamesHeading
-            groomName={qr.groomName}
-            brideName={qr.brideName}
-            fallback={qr.title}
-            className="font-couple mt-3 text-[39px] leading-[1.02] text-charcoal-900 sm:text-[46px]"
-          />
-          <p className="mt-2 text-base text-stone-400">{date}</p>
-          <div className="mx-auto mt-8 inline-block"><QrImage qr={qr} /></div>
-          {meta}
+        <div className="mt-6">
+          <OriginalQrPrintCard qr={qr} />
         </div>
       </div>
     </main>

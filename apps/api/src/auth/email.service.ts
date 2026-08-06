@@ -25,18 +25,50 @@ export class EmailService {
     return this.transporter;
   }
 
-  async sendMagicLink(email: string, verifyUrl: string): Promise<void> {
+  async sendMagicLink(
+    email: string,
+    approveUrl: string,
+    options?: { ttlMinutes?: number },
+  ): Promise<void> {
+    const ttlMinutes = options?.ttlMinutes ?? 15;
     const from = this.config.get<string>(
       "SMTP_FROM",
       "Memopics <noreply@memopics.com>",
     );
+    const text = [
+      "Sign in to Memopics",
+      "",
+      "Tap Approve in your browser to confirm this sign-in request:",
+      approveUrl,
+      "",
+      `This request expires in ${ttlMinutes} minutes.`,
+      "If you did not request this, you can ignore this email.",
+    ].join("\n");
+
+    const html = `
+      <div style="font-family: system-ui, sans-serif; max-width: 480px; margin: 0 auto; padding: 24px;">
+        <h1 style="font-size: 22px; margin: 0 0 12px;">Sign in to Memopics</h1>
+        <p style="color: #57534e; line-height: 1.5;">
+          Tap the button below to approve sign-in. Your Memopics tab will continue automatically.
+        </p>
+        <p style="margin: 28px 0;">
+          <a href="${approveUrl}" style="display: inline-block; background: #a16207; color: #fffaf5; text-decoration: none; padding: 14px 28px; border-radius: 12px; font-weight: 600;">
+            Approve sign in
+          </a>
+        </p>
+        <p style="color: #78716c; font-size: 13px; line-height: 1.5;">
+          This request expires in ${ttlMinutes} minutes. If you did not request this, ignore this email.
+        </p>
+      </div>
+    `;
+
     try {
       await this.getTransporter().sendMail({
         from,
         to: email,
-        subject: "Sign in to Memopics",
-        text: `Sign in to Memopics:\n\n${verifyUrl}\n\nThis link expires in ${this.config.get("MAGIC_LINK_TTL_MINUTES", 15)} minutes.`,
-        html: `<p>Sign in to Memopics:</p><p><a href="${verifyUrl}">${verifyUrl}</a></p>`,
+        subject: "Approve sign in to Memopics",
+        text,
+        html,
       });
     } catch (error) {
       throw new InternalServerErrorException(

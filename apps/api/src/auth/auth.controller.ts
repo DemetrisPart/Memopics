@@ -1,8 +1,14 @@
-import { Controller, Get, Post, Req, Res, UnauthorizedException, Body } from "@nestjs/common";
+import { Controller, Post, Get, Query, Req, Res, UnauthorizedException, Body, HttpException, HttpStatus, HttpCode } from "@nestjs/common";
 import type { Request, Response } from "express";
 import { ConfigService } from "@nestjs/config";
 import { AuthService } from "./auth.service";
-import { MagicLinkDto, RegisterDto, VerifyMagicLinkDto } from "./dto/auth.dto";
+import {
+  ApproveMagicLinkDto,
+  MagicLinkDto,
+  PollMagicLinkDto,
+  RegisterDto,
+  VerifyMagicLinkDto,
+} from "./dto/auth.dto";
 import {
   clearAuthCookies,
   getRefreshTokenFromRequest,
@@ -26,6 +32,50 @@ export class AuthController {
     return this.authService.requestMagicLink(dto.email);
   }
 
+  @Post("approve")
+  async approve(@Body() dto: ApproveMagicLinkDto) {
+    return this.authService.approveMagicLink(dto.token);
+  }
+
+  @Post("magic-link/complete")
+  @HttpCode(200)
+  async completePoll(
+    @Body() dto: PollMagicLinkDto,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const session = await this.authService.completeMagicLinkPoll(dto.pollToken);
+    if (session === "pending") {
+      throw new HttpException(
+        { status: "pending", message: "Waiting for email approval" },
+        HttpStatus.ACCEPTED,
+      );
+    }
+
+    setAuthCookies(res, this.config, {
+      accessToken: session.accessToken,
+      refreshToken: session.refreshToken,
+    });
+    return {
+      message: "Authenticated",
+      userId: session.userId,
+      accessToken: session.accessToken,
+      refreshToken: session.refreshToken,
+    };
+  }
+
+  @Get("magic-link/status")
+  magicLinkStatus(@Query("pollToken") pollToken: string) {
+    if (!pollToken?.trim()) {
+      throw new HttpException(
+        { message: "pollToken required" },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    return this.authService
+      .getMagicLinkPollStatus(pollToken.trim())
+      .then((status) => ({ status }));
+  }
+
   @Post("verify")
   async verify(
     @Body() dto: VerifyMagicLinkDto,
@@ -39,6 +89,8 @@ export class AuthController {
     return {
       message: "Authenticated",
       userId: session.userId,
+      accessToken: session.accessToken,
+      refreshToken: session.refreshToken,
     };
   }
 

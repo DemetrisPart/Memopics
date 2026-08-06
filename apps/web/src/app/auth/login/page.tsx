@@ -2,23 +2,22 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  checkSlugAvailability,
-  createEvent,
-  register,
-  requestMagicLink,
-} from "@/lib/api/dashboard-client";
+import { register, requestMagicLink } from "@/lib/api/dashboard-client";
+import { warmupAuthRoutes } from "@/lib/auth/warmup-verify-route";
 import { ApiError } from "@/lib/api/types";
+
+const VERIFY_STORAGE_KEY = "memopics_verification_token";
 
 type AuthMode = "login" | "register";
 
 export default function LoginPage() {
+  const router = useRouter();
   const [mode, setMode] = useState<AuthMode>("login");
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
-  const [sent, setSent] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const submit = async (e: React.FormEvent) => {
@@ -26,41 +25,25 @@ export default function LoginPage() {
     setLoading(true);
     setError(null);
     try {
-      if (mode === "register") {
-        await register(email.trim());
-      } else {
-        await requestMagicLink(email.trim());
-      }
-      setSent(true);
+      const trimmedEmail = email.trim();
+      const result =
+        mode === "register"
+          ? await register(trimmedEmail)
+          : await requestMagicLink(trimmedEmail);
+
+      sessionStorage.setItem(VERIFY_STORAGE_KEY, result.verificationToken);
+      await warmupAuthRoutes();
+      const params = new URLSearchParams({
+        pollToken: result.pollToken,
+        email: trimmedEmail,
+      });
+      router.push(`/auth/check-email?${params.toString()}`);
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Something went wrong");
     } finally {
       setLoading(false);
     }
   };
-
-  if (sent) {
-    return (
-      <main className="flex min-h-dvh flex-col items-center justify-center px-4">
-        <div className="w-full max-w-md rounded-2xl border border-stone-200 bg-white p-8 text-center shadow-soft">
-          <h1 className="text-2xl font-semibold text-charcoal-900">
-            Check your email
-          </h1>
-          <p className="mt-3 text-sm text-stone-400">
-            We sent a magic link to <strong className="text-charcoal-800">{email}</strong>.
-            Click the link to sign in.
-          </p>
-          <Button
-            className="mt-6"
-            variant="secondary"
-            onClick={() => setSent(false)}
-          >
-            Use a different email
-          </Button>
-        </div>
-      </main>
-    );
-  }
 
   return (
     <main className="flex min-h-dvh flex-col items-center justify-center px-4">

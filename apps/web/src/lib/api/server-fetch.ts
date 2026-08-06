@@ -9,7 +9,10 @@ async function serverApiFetch<T>(
 ): Promise<T> {
   const base = process.env.API_URL ?? "http://localhost:3001";
   const cookieStore = await cookies();
-  const cookieHeader = cookieStore.toString();
+  const cookieHeader = cookieStore
+    .getAll()
+    .map((cookie) => `${cookie.name}=${cookie.value}`)
+    .join("; ");
 
   const response = await fetch(`${base}/v1${path}`, {
     ...init,
@@ -62,6 +65,10 @@ export async function fetchEventStatsServer(eventId: string) {
 
 export async function fetchEventQrServer(eventId: string) {
   return serverApiFetch(`/events/${encodeURIComponent(eventId)}/qr`);
+}
+
+export async function fetchPublicEventQrServer(slug: string) {
+  return serverApiFetch(`/public/events/${encodeURIComponent(slug)}/qr`);
 }
 
 export async function fetchCoupleGalleryServer(

@@ -9,21 +9,20 @@ const ROOT = resolve(import.meta.dirname, "..");
 const ENV_PATH = resolve(ROOT, ".env");
 const EXAMPLE_PATH = resolve(ROOT, ".env.example");
 
-const LAN_IP = process.env.MOBILE_LAN_IP ?? "192.168.0.105";
+const LAN_IP = process.env.MOBILE_LAN_IP ?? "192.168.0.103";
 const PUBLIC_HOST = process.env.MOBILE_PUBLIC_HOST ?? "";
 
-const ENTRIES: Record<string, string> = {
+const ENTRIES = {
   STORAGE_LAN_ENDPOINT: `http://${LAN_IP}:9000`,
   NEXT_PUBLIC_MOBILE_LAN_ORIGIN: `http://${LAN_IP}:3000`,
+  WEB_APP_URL: `http://${LAN_IP}:3000`,
 };
 
 if (PUBLIC_HOST) {
   ENTRIES.STORAGE_PUBLIC_ENDPOINT = `http://${PUBLIC_HOST}:9000`;
   ENTRIES.NEXT_PUBLIC_MOBILE_PUBLIC_ORIGIN = `http://${PUBLIC_HOST}:3000`;
   ENTRIES.PUBLIC_EVENT_BASE_URL = `http://${PUBLIC_HOST}:3000`;
-}
-
-if (!PUBLIC_HOST) {
+} else {
   ENTRIES.PUBLIC_EVENT_BASE_URL = `http://${LAN_IP}:3000`;
 }
 

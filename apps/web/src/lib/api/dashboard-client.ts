@@ -53,7 +53,9 @@ async function apiFetch<T>(
   return (await response.json()) as T;
 }
 
-export async function register(email: string): Promise<{ message: string }> {
+export async function register(
+  email: string,
+): Promise<{ message: string; pollToken: string; verificationToken: string }> {
   return apiFetch("/auth/register", {
     method: "POST",
     body: JSON.stringify({ email }),
@@ -62,11 +64,94 @@ export async function register(email: string): Promise<{ message: string }> {
 
 export async function requestMagicLink(
   email: string,
-): Promise<{ message: string }> {
+): Promise<{ message: string; pollToken: string; verificationToken: string }> {
   return apiFetch("/auth/magic-link", {
     method: "POST",
     body: JSON.stringify({ email }),
   });
+}
+
+export async function approveMagicLink(
+  token: string,
+): Promise<{ message: string }> {
+  let response: Response;
+  try {
+    response = await fetch("/api/auth/approve", {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ token }),
+    });
+  } catch {
+    throw new ApiError(
+      "Could not reach the server. Check your connection and try again.",
+      0,
+    );
+  }
+
+  if (!response.ok) {
+    let message = response.statusText || "Request failed";
+    try {
+      const body = (await response.json()) as { message?: string | string[] };
+      if (typeof body.message === "string") message = body.message;
+      else if (Array.isArray(body.message)) message = body.message.join(", ");
+    } catch {
+      // ignore
+    }
+    throw new ApiError(message, response.status);
+  }
+
+  return (await response.json()) as { message: string };
+}
+
+export async function pollMagicLinkComplete(
+  pollToken: string,
+): Promise<"pending" | "done"> {
+  const url =
+    typeof window === "undefined"
+      ? `${process.env.API_URL ?? "http://localhost:3001"}/v1/auth/magic-link/complete`
+      : "/api/auth/complete";
+  let response: Response;
+  try {
+    response = await fetch(url, {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ pollToken }),
+    });
+  } catch {
+    throw new ApiError(
+      "Could not reach the server. Check your connection and try again.",
+      0,
+    );
+  }
+
+  if (response.status === 202) {
+    return "pending";
+  }
+
+  // Token already consumed — treat as signed in (React strict-mode double poll).
+  if (response.status === 401) {
+    return "done";
+  }
+
+  if (response.status === 404) {
+    throw new ApiError("Not found", 404);
+  }
+
+  if (!response.ok) {
+    let message = response.statusText || "Request failed";
+    try {
+      const body = (await response.json()) as { message?: string | string[] };
+      if (typeof body.message === "string") message = body.message;
+      else if (Array.isArray(body.message)) message = body.message.join(", ");
+    } catch {
+      // ignore
+    }
+    throw new ApiError(message, response.status);
+  }
+
+  return "done";
 }
 
 export async function verifyMagicLink(
