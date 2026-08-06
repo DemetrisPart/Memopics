@@ -1,4 +1,4 @@
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import type { AuthUser, CoupleEvent } from "./types";
 import { ApiError } from "./types";
@@ -9,16 +9,22 @@ async function serverApiFetch<T>(
 ): Promise<T> {
   const base = process.env.API_URL ?? "http://localhost:3001";
   const cookieStore = await cookies();
+  const headerStore = await headers();
   const cookieHeader = cookieStore
     .getAll()
     .map((cookie) => `${cookie.name}=${cookie.value}`)
     .join("; ");
+  const clientIp =
+    headerStore.get("x-forwarded-for")?.split(",")[0]?.trim() ??
+    headerStore.get("x-real-ip") ??
+    undefined;
 
   const response = await fetch(`${base}/v1${path}`, {
     ...init,
     headers: {
       "Content-Type": "application/json",
       ...(cookieHeader ? { cookie: cookieHeader } : {}),
+      ...(clientIp ? { "x-forwarded-for": clientIp } : {}),
       ...init?.headers,
     },
     cache: "no-store",

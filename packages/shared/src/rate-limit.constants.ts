@@ -1,7 +1,7 @@
 /** Rate limit defaults — override via env in RateLimitService. */
 export const RATE_LIMITS = {
-  /** Global API requests per IP per minute */
-  API_GLOBAL_PER_IP_MINUTE: 120,
+  /** Global API requests per IP per minute (gallery/lightbox reads add up quickly). */
+  API_GLOBAL_PER_IP_MINUTE: 300,
   /** Guest session creation per IP per hour */
   GUEST_SESSION_CREATE_PER_IP_HOUR: 10,
   /** Upload init requests per guest session per hour */

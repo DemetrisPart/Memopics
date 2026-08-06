@@ -49,6 +49,15 @@ async function probeOrigin(origin: string, timeoutMs = 2000): Promise<boolean> {
   }
 }
 
+function modeForOrigin(
+  origin: string,
+  lan?: string,
+  publicOrigin?: string,
+): NetworkMode {
+  if (publicOrigin && origin === publicOrigin) return "public";
+  return "lan";
+}
+
 export async function detectBestNetworkMode(): Promise<NetworkMode> {
   const { lan, publicOrigin } = getMobileOrigins();
 
@@ -97,7 +106,8 @@ export function getRedirectTarget(
   const currentOrigin = window.location.origin;
   if (currentOrigin === targetOrigin) return null;
 
-  return `${targetOrigin}${pathname}${window.location.search}`;
+  const path = pathname.startsWith("/") ? pathname : `/${pathname}`;
+  return `${targetOrigin}${path}${window.location.search}`;
 }
 
 const PROBE_DONE_KEY = "memopics_network_probe_done";
@@ -111,15 +121,26 @@ export function markNetworkProbeDone(): void {
   sessionStorage.setItem(PROBE_DONE_KEY, "1");
 }
 
-export async function ensureMobileNetworkRoute(
-  pathname: string,
-): Promise<NetworkMode | null> {
+/** Keep the current origin when it already works — avoids guest → home redirects on LAN. */
+export async function ensureMobileNetworkRoute(): Promise<NetworkMode | null> {
   if (!isMobileNetworkConfigured()) return null;
+
+  const { lan, publicOrigin } = getMobileOrigins();
+  const currentOrigin = window.location.origin;
+  const currentPath =
+    window.location.pathname + window.location.search + window.location.hash;
+
+  if (await probeOrigin(currentOrigin)) {
+    const mode = modeForOrigin(currentOrigin, lan, publicOrigin);
+    setNetworkMode(mode);
+    markNetworkProbeDone();
+    return mode;
+  }
 
   const mode = await detectBestNetworkMode();
   setNetworkMode(mode);
 
-  const target = getRedirectTarget(mode, pathname);
+  const target = getRedirectTarget(mode, currentPath);
   if (target) {
     window.location.replace(target);
     return mode;

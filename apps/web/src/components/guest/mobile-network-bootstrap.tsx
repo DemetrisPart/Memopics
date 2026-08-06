@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { usePathname } from "next/navigation";
 import {
   ensureMobileNetworkRoute,
   hasCachedNetworkProbe,
@@ -13,7 +12,6 @@ export function MobileNetworkBootstrap({
 }: {
   children: React.ReactNode;
 }) {
-  const pathname = usePathname();
   const [ready, setReady] = useState(() => {
     if (!isMobileNetworkConfigured()) return true;
     return hasCachedNetworkProbe();
@@ -23,10 +21,10 @@ export function MobileNetworkBootstrap({
     if (!isMobileNetworkConfigured()) return;
 
     void (async () => {
-      await ensureMobileNetworkRoute(pathname);
+      await ensureMobileNetworkRoute();
       setReady(true);
     })();
-  }, [pathname]);
+  }, []);
 
   return (
     <>

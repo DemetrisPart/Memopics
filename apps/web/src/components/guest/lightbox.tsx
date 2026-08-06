@@ -2,34 +2,28 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Trash2, X } from "lucide-react";
-import { fetchMediaUrl } from "@/lib/api/client";
 import { cn } from "@/lib/utils";
 
-type LightboxItem = {
+export type LightboxItem = {
   id: string;
   thumbUrl: string | null;
   canDelete?: boolean;
 };
 
 type LightboxProps = {
-  slug: string;
   items: LightboxItem[];
   initialIndex: number;
   onClose: () => void;
+  resolveWebUrl: (item: LightboxItem) => Promise<string | null>;
   onDelete?: (mediaId: string) => Promise<void>;
+  onIndexChange?: (index: number) => void;
+  getTitle?: (item: LightboxItem) => string;
+  floatingClose?: boolean;
+  showNavArrows?: boolean;
 };
 
 const SNAP_MS = 165;
 const SNAP_EASE = "cubic-bezier(0.22, 1, 0.36, 1)";
-
-async function resolveWebUrl(slug: string, item: LightboxItem) {
-  try {
-    const result = await fetchMediaUrl(slug, item.id, "web");
-    return result.url;
-  } catch {
-    return item.thumbUrl;
-  }
-}
 
 function preloadImage(url: string | null): Promise<void> {
   if (!url) return Promise.resolve();
@@ -42,11 +36,15 @@ function preloadImage(url: string | null): Promise<void> {
 }
 
 export function Lightbox({
-  slug,
   items,
   initialIndex,
   onClose,
+  resolveWebUrl,
   onDelete,
+  onIndexChange,
+  getTitle,
+  floatingClose = false,
+  showNavArrows = false,
 }: LightboxProps) {
   const [index, setIndex] = useState(initialIndex);
   const [urlsById, setUrlsById] = useState<Record<string, string>>({});
@@ -55,7 +53,6 @@ export function Lightbox({
   const [swipeHint, setSwipeHint] = useState(false);
   const [dragging, setDragging] = useState(false);
   const [settling, setSettling] = useState(false);
-  /** Locks the visible photo URL while a slide-out animation runs. */
   const [lockedUrl, setLockedUrl] = useState<string | null>(null);
 
   const viewportRef = useRef<HTMLDivElement>(null);
@@ -74,6 +71,7 @@ export function Lightbox({
   const urlsByIdRef = useRef(urlsById);
   const loadGenRef = useRef(0);
   const hintShownRef = useRef(false);
+  const resolveWebUrlRef = useRef(resolveWebUrl);
 
   const current = items[index];
   const canDelete = Boolean(current?.canDelete && onDelete);
@@ -82,6 +80,7 @@ export function Lightbox({
   indexRef.current = index;
   itemsRef.current = items;
   urlsByIdRef.current = urlsById;
+  resolveWebUrlRef.current = resolveWebUrl;
 
   const urlForItem = useCallback(
     (item: LightboxItem | undefined) => {
@@ -92,6 +91,14 @@ export function Lightbox({
   );
 
   const displayUrl = lockedUrl ?? urlForItem(current);
+
+  const setIndexAndNotify = useCallback(
+    (nextIndex: number) => {
+      setIndex(nextIndex);
+      onIndexChange?.(nextIndex);
+    },
+    [onIndexChange],
+  );
 
   const applyTransform = useCallback((dx: number, animate: boolean) => {
     const layer = currentRef.current;
@@ -120,35 +127,33 @@ export function Lightbox({
     });
   }, []);
 
-  const prefetchAround = useCallback(
-    async (atIndex: number, gen: number) => {
-      const list = itemsRef.current;
-      const centerItem = list[atIndex];
-      const prevItem = list[atIndex - 1];
-      const nextItem = list[atIndex + 1];
+  const prefetchAround = useCallback(async (atIndex: number, gen: number) => {
+    const list = itemsRef.current;
+    const centerItem = list[atIndex];
+    const prevItem = list[atIndex - 1];
+    const nextItem = list[atIndex + 1];
+    const resolve = resolveWebUrlRef.current;
 
-      const [centerResolved, prevResolved, nextResolved] = await Promise.all([
-        centerItem ? resolveWebUrl(slug, centerItem) : Promise.resolve(null),
-        prevItem ? resolveWebUrl(slug, prevItem) : Promise.resolve(null),
-        nextItem ? resolveWebUrl(slug, nextItem) : Promise.resolve(null),
-      ]);
+    const [centerResolved, prevResolved, nextResolved] = await Promise.all([
+      centerItem ? resolve(centerItem) : Promise.resolve(null),
+      prevItem ? resolve(prevItem) : Promise.resolve(null),
+      nextItem ? resolve(nextItem) : Promise.resolve(null),
+    ]);
 
-      if (gen !== loadGenRef.current) return;
+    if (gen !== loadGenRef.current) return;
 
-      cacheUrls({
-        ...(centerItem ? { [centerItem.id]: centerResolved } : {}),
-        ...(prevItem ? { [prevItem.id]: prevResolved } : {}),
-        ...(nextItem ? { [nextItem.id]: nextResolved } : {}),
-      });
+    cacheUrls({
+      ...(centerItem ? { [centerItem.id]: centerResolved } : {}),
+      ...(prevItem ? { [prevItem.id]: prevResolved } : {}),
+      ...(nextItem ? { [nextItem.id]: nextResolved } : {}),
+    });
 
-      await Promise.all([
-        preloadImage(centerResolved),
-        preloadImage(prevResolved),
-        preloadImage(nextResolved),
-      ]);
-    },
-    [cacheUrls, slug],
-  );
+    await Promise.all([
+      preloadImage(centerResolved),
+      preloadImage(prevResolved),
+      preloadImage(nextResolved),
+    ]);
+  }, [cacheUrls]);
 
   useEffect(() => {
     hintShownRef.current = false;
@@ -164,7 +169,7 @@ export function Lightbox({
       if (gen !== loadGenRef.current) return;
       setInitialLoading(false);
     })();
-  }, [initialIndex, prefetchAround, slug]);
+  }, [initialIndex, prefetchAround]);
 
   useEffect(() => {
     if (items.length === 0) {
@@ -173,6 +178,14 @@ export function Lightbox({
     }
     setIndex((i) => Math.min(i, items.length - 1));
   }, [items.length, onClose]);
+
+  useEffect(() => {
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, []);
 
   useEffect(() => {
     const viewport = viewportRef.current;
@@ -193,13 +206,39 @@ export function Lightbox({
     return () => observer.disconnect();
   }, [applyTransform]);
 
+  const goTo = useCallback(
+    (nextIndex: number) => {
+      if (settlingRef.current || draggingRef.current || deleting) return;
+      const clamped = Math.max(
+        0,
+        Math.min(itemsRef.current.length - 1, nextIndex),
+      );
+      if (clamped === indexRef.current) return;
+
+      setIndexAndNotify(clamped);
+      dragXRef.current = 0;
+      applyTransform(0, false);
+      void prefetchAround(clamped, loadGenRef.current);
+    },
+    [applyTransform, deleting, prefetchAround, setIndexAndNotify],
+  );
+
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
       if (event.key === "Escape") onClose();
+      if (event.key === "ArrowLeft" && indexRef.current > 0) {
+        goTo(indexRef.current - 1);
+      }
+      if (
+        event.key === "ArrowRight" &&
+        indexRef.current < itemsRef.current.length - 1
+      ) {
+        goTo(indexRef.current + 1);
+      }
     }
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [onClose]);
+  }, [goTo, onClose]);
 
   useEffect(() => {
     if (
@@ -300,7 +339,7 @@ export function Lightbox({
         layer.removeEventListener("transitionend", onTransitionEnd);
 
         layer.style.transition = "none";
-        setIndex(nextIndex);
+        setIndexAndNotify(nextIndex);
         setLockedUrl(null);
 
         requestAnimationFrame(() => {
@@ -353,20 +392,62 @@ export function Lightbox({
     }
   }
 
+  const headerTitle = current && getTitle ? getTitle(current) : null;
+
   return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-charcoal-900">
-      <div className="flex items-center justify-between px-4 py-3">
-        <span className="text-sm text-ivory-50">
-          {index + 1} / {items.length}
-        </span>
+    <div className="fixed inset-0 z-50 flex flex-col bg-black/95">
+      {floatingClose ? (
         <button
           type="button"
           onClick={onClose}
-          className="rounded-lg p-2 text-ivory-50 hover:bg-white/10"
-          aria-label="Close lightbox"
+          className="fixed z-[60] flex size-11 items-center justify-center rounded-full border border-white/20 bg-black/70 text-white shadow-lg backdrop-blur-sm hover:bg-black/90 active:scale-95"
+          style={{
+            top: "max(1rem, env(safe-area-inset-top))",
+            right: "max(1rem, env(safe-area-inset-right))",
+          }}
+          aria-label="Close photo"
         >
-          <X className="size-6" />
+          <X className="size-6" strokeWidth={2.5} />
         </button>
+      ) : null}
+
+      <div
+        className={cn(
+          "flex items-center justify-between px-4 py-3 text-ivory-50",
+          floatingClose &&
+            "pb-2 pt-[max(1rem,env(safe-area-inset-top))] pr-16",
+        )}
+      >
+        {headerTitle ? (
+          <p className="truncate text-sm text-white">{headerTitle}</p>
+        ) : (
+          <span className="text-sm">
+            {index + 1} / {items.length}
+          </span>
+        )}
+
+        {!floatingClose ? (
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-lg p-2 text-ivory-50 hover:bg-white/10"
+            aria-label="Close lightbox"
+          >
+            <X className="size-6" />
+          </button>
+        ) : canDelete ? (
+          <button
+            type="button"
+            onClick={() => void handleDelete()}
+            disabled={deleting}
+            className="rounded-lg p-2 text-white/80 hover:bg-white/10 disabled:opacity-50"
+            aria-label="Delete photo"
+          >
+            <Trash2 className="h-5 w-5" />
+          </button>
+        ) : (
+          <span className="w-9" aria-hidden />
+        )}
       </div>
 
       <div
@@ -381,9 +462,21 @@ export function Lightbox({
         onPointerUp={() => finishDrag()}
         onPointerCancel={() => finishDrag()}
       >
+        {showNavArrows ? (
+          <button
+            type="button"
+            onClick={() => goTo(index - 1)}
+            disabled={index === 0 || initialLoading}
+            className="absolute left-2 z-10 rounded-full bg-white/10 px-3 py-2 text-lg text-white disabled:opacity-30"
+            aria-label="Previous photo"
+          >
+            ‹
+          </button>
+        ) : null}
+
         <div
           ref={viewportRef}
-          className="relative h-full max-h-[75vh] w-full max-w-3xl overflow-hidden bg-charcoal-900"
+          className="relative h-full max-h-[75dvh] w-full max-w-3xl overflow-hidden"
         >
           <div
             ref={currentRef}
@@ -408,10 +501,28 @@ export function Lightbox({
             ) : null}
           </div>
         </div>
+
+        {showNavArrows ? (
+          <button
+            type="button"
+            onClick={() => goTo(index + 1)}
+            disabled={index >= items.length - 1 || initialLoading}
+            className="absolute right-2 z-10 rounded-full bg-white/10 px-3 py-2 text-lg text-white disabled:opacity-30"
+            aria-label="Next photo"
+          >
+            ›
+          </button>
+        ) : null}
       </div>
 
-      {canDelete ? (
-        <div className="flex justify-center border-t border-white/10 px-4 py-2">
+      {headerTitle ? (
+        <p className="pb-[max(1.5rem,env(safe-area-inset-bottom))] text-center text-xs text-white/50">
+          {index + 1} / {items.length}
+        </p>
+      ) : null}
+
+      {canDelete && !floatingClose ? (
+        <div className="flex justify-center border-t border-white/10 px-4 py-2 pb-[max(0.5rem,env(safe-area-inset-bottom))]">
           <button
             type="button"
             onClick={() => void handleDelete()}

@@ -11,6 +11,7 @@ import {
   checkGuestSession,
   deleteGalleryMedia,
   fetchGallery,
+  fetchMediaUrl,
 } from "@/lib/api/client";
 import { resolveNetworkUrl } from "@/lib/mobile-network";
 import type { GalleryItem, PrivacyMode, PublicEvent } from "@/lib/api/types";
@@ -293,11 +294,22 @@ export function GalleryPageClient({ slug, event }: GalleryPageClientProps) {
 
       {lightboxIndex !== null ? (
         <Lightbox
-          slug={slug}
           items={items}
           initialIndex={lightboxIndex}
           onClose={() => setLightboxIndex(null)}
           onDelete={handleDeleteMedia}
+          resolveWebUrl={async (item) => {
+            try {
+              const result = await fetchMediaUrl(slug, item.id, "web");
+              return resolveNetworkUrl({
+                url: result.url,
+                lanUrl: result.urlLan,
+                publicUrl: result.urlPublic,
+              });
+            } catch {
+              return item.thumbUrl;
+            }
+          }}
         />
       ) : null}
     </div>

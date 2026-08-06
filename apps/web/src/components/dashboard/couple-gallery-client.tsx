@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { Trash2, X } from "lucide-react";
+import { Lightbox } from "@/components/guest/lightbox";
 import { SquareThumbFrame } from "@/components/guest/square-thumb-frame";
 import {
   deleteCoupleMedia,
@@ -11,7 +11,6 @@ import {
 } from "@/lib/api/dashboard-client";
 import { resolveNetworkUrl } from "@/lib/mobile-network";
 import type { CoupleGalleryItem } from "@/lib/api/types";
-import { cn } from "@/lib/utils";
 
 type CoupleGalleryClientProps = {
   eventId: string;
@@ -24,6 +23,14 @@ function thumbUrl(item: CoupleGalleryItem): string | null {
     lanUrl: item.thumbUrlLan,
     publicUrl: item.thumbUrlPublic,
   });
+}
+
+function toLightboxItem(item: CoupleGalleryItem) {
+  return {
+    id: item.id,
+    thumbUrl: thumbUrl(item),
+    canDelete: true,
+  };
 }
 
 export function CoupleGalleryClient({ eventId }: CoupleGalleryClientProps) {
@@ -82,7 +89,6 @@ export function CoupleGalleryClient({ eventId }: CoupleGalleryClientProps) {
   }, [nextCursor, loadingMore, loadGallery]);
 
   const handleDelete = async (mediaId: string) => {
-    if (!window.confirm("Delete this photo? This cannot be undone.")) return;
     setDeletingId(mediaId);
     try {
       await deleteCoupleMedia(eventId, mediaId);
@@ -95,6 +101,22 @@ export function CoupleGalleryClient({ eventId }: CoupleGalleryClientProps) {
       setDeletingId(null);
     }
   };
+
+  const resolveCoupleWebUrl = useCallback(
+    async (item: { id: string; thumbUrl: string | null }) => {
+      try {
+        const result = await fetchCoupleMediaUrl(eventId, item.id, "web");
+        return resolveNetworkUrl({
+          url: result.url,
+          lanUrl: result.urlLan,
+          publicUrl: result.urlPublic,
+        });
+      } catch {
+        return item.thumbUrl;
+      }
+    },
+    [eventId],
+  );
 
   return (
     <div className="space-y-4">
@@ -172,136 +194,20 @@ export function CoupleGalleryClient({ eventId }: CoupleGalleryClientProps) {
       ) : null}
 
       {lightboxIndex !== null ? (
-        <CoupleLightbox
-          eventId={eventId}
-          items={items}
+        <Lightbox
+          items={items.map(toLightboxItem)}
           initialIndex={lightboxIndex}
-          deleting={deletingId !== null}
           onClose={() => setLightboxIndex(null)}
           onDelete={handleDelete}
           onIndexChange={setLightboxIndex}
+          resolveWebUrl={resolveCoupleWebUrl}
+          getTitle={(item) =>
+            items.find((entry) => entry.id === item.id)?.guestName ?? ""
+          }
+          floatingClose
+          showNavArrows
         />
       ) : null}
-    </div>
-  );
-}
-
-type CoupleLightboxProps = {
-  eventId: string;
-  items: CoupleGalleryItem[];
-  initialIndex: number;
-  deleting: boolean;
-  onClose: () => void;
-  onDelete: (mediaId: string) => Promise<void>;
-  onIndexChange: (index: number) => void;
-};
-
-function CoupleLightbox({
-  eventId,
-  items,
-  initialIndex,
-  deleting,
-  onClose,
-  onDelete,
-  onIndexChange,
-}: CoupleLightboxProps) {
-  const [index, setIndex] = useState(initialIndex);
-  const [url, setUrl] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  const item = items[index];
-
-  useEffect(() => {
-    if (!item) return;
-    setLoading(true);
-    void fetchCoupleMediaUrl(eventId, item.id, "web")
-      .then((result) => {
-        setUrl(
-          resolveNetworkUrl({
-            url: result.url,
-            lanUrl: result.urlLan,
-            publicUrl: result.urlPublic,
-          }),
-        );
-      })
-      .catch(() => {
-        setUrl(thumbUrl(item));
-      })
-      .finally(() => setLoading(false));
-  }, [eventId, item]);
-
-  const go = (next: number) => {
-    const clamped = Math.max(0, Math.min(items.length - 1, next));
-    setIndex(clamped);
-    onIndexChange(clamped);
-  };
-
-  if (!item) return null;
-
-  return (
-    <div
-      className="fixed inset-0 z-50 flex flex-col bg-black/95"
-      role="dialog"
-      aria-modal
-      aria-label="Photo viewer"
-    >
-      <div className="flex items-center justify-between px-4 py-3 text-white">
-        <p className="truncate text-sm">{item.guestName}</p>
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => void onDelete(item.id)}
-            disabled={deleting}
-            className="rounded-lg p-2 text-white/80 hover:bg-white/10 disabled:opacity-50"
-            aria-label="Delete photo"
-          >
-            <Trash2 className="h-5 w-5" />
-          </button>
-          <button
-            type="button"
-            onClick={onClose}
-            className="rounded-lg p-2 text-white/80 hover:bg-white/10"
-            aria-label="Close"
-          >
-            <X className="h-5 w-5" />
-          </button>
-        </div>
-      </div>
-
-      <div className="relative flex flex-1 items-center justify-center px-4">
-        <button
-          type="button"
-          onClick={() => go(index - 1)}
-          disabled={index === 0}
-          className="absolute left-2 z-10 rounded-full bg-white/10 px-3 py-2 text-white disabled:opacity-30"
-          aria-label="Previous"
-        >
-          ‹
-        </button>
-        {loading ? (
-          <div className="h-8 w-8 animate-spin rounded-full border-2 border-white/30 border-t-white" />
-        ) : url ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={url}
-            alt=""
-            className="max-h-[70dvh] max-w-full object-contain"
-          />
-        ) : null}
-        <button
-          type="button"
-          onClick={() => go(index + 1)}
-          disabled={index >= items.length - 1}
-          className="absolute right-2 z-10 rounded-full bg-white/10 px-3 py-2 text-white disabled:opacity-30"
-          aria-label="Next"
-        >
-          ›
-        </button>
-      </div>
-
-      <p className={cn("pb-6 text-center text-xs text-white/50")}>
-        {index + 1} / {items.length}
-      </p>
     </div>
   );
 }
