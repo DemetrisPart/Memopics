@@ -80,6 +80,9 @@ async function proxyRequest(
   const cookie = request.headers.get("cookie");
   if (cookie) headers.set("cookie", cookie);
 
+  const guestToken = request.headers.get("x-guest-session-token");
+  if (guestToken) headers.set("x-guest-session-token", guestToken);
+
   headers.set("x-forwarded-for", getClientIp(request));
 
   const init: RequestInit = {

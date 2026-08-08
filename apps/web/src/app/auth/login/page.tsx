@@ -59,7 +59,7 @@ export default function LoginPage() {
         </h1>
         <p className="mt-2 text-sm text-stone-400">
           {mode === "login"
-            ? "We’ll email you a secure sign-in link."
+            ? "We’ll send an email — tap Approve to sign in."
             : "Start managing your event photos."}
         </p>
 
@@ -75,7 +75,7 @@ export default function LoginPage() {
           />
           {error ? <p className="text-sm text-rose-500">{error}</p> : null}
           <Button type="submit" fullWidth disabled={loading}>
-            {loading ? "Sending…" : "Send magic link"}
+            {loading ? "Sending…" : "Send approval email"}
           </Button>
         </form>
 

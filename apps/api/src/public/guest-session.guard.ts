@@ -35,11 +35,7 @@ export class GuestSessionGuard implements CanActivate {
       throw new UnauthorizedException("Guest session required");
     }
 
-    const cookieName = this.config.get<string>(
-      "GUEST_SESSION_COOKIE",
-      "memopics_guest",
-    );
-    const token = request.cookies?.[cookieName] as string | undefined;
+    const token = getGuestSessionTokenFromRequest(request, this.config);
 
     if (!token) {
       throw new UnauthorizedException("Guest session required");
@@ -67,7 +63,15 @@ export function getGuestSessionTokenFromRequest(
     "GUEST_SESSION_COOKIE",
     "memopics_guest",
   );
-  return req.cookies?.[cookieName] as string | undefined;
+  const fromCookie = req.cookies?.[cookieName] as string | undefined;
+  if (fromCookie) return fromCookie;
+
+  if (config.get("NODE_ENV") !== "production") {
+    const header = req.headers["x-guest-session-token"];
+    if (typeof header === "string" && header.length > 0) return header;
+  }
+
+  return undefined;
 }
 
 export function hashGuestSessionToken(token: string): string {

@@ -10,6 +10,10 @@ import type {
 } from "./types";
 import { inferPhotoContentType } from "@/lib/utils";
 import { resolveNetworkUrl } from "@/lib/mobile-network";
+import {
+  getGuestSessionToken,
+  setGuestSessionToken,
+} from "@/lib/guest-session-storage";
 import { ApiError } from "./types";
 
 function getServerApiUrl(): string {
@@ -36,6 +40,15 @@ function buildApiUrl(path: string): string {
   return `/api/v1${path}`;
 }
 
+function guestSessionHeaders(path: string): Record<string, string> {
+  if (typeof window === "undefined") return {};
+  const match = path.match(/\/public\/events\/([^/]+)/);
+  if (!match?.[1]) return {};
+  const slug = decodeURIComponent(match[1]);
+  const token = getGuestSessionToken(slug);
+  return token ? { "X-Guest-Session-Token": token } : {};
+}
+
 async function apiFetch<T>(
   path: string,
   init?: RequestInit & { credentials?: RequestCredentials },
@@ -48,6 +61,7 @@ async function apiFetch<T>(
       credentials: init?.credentials ?? "include",
       headers: {
         "Content-Type": "application/json",
+        ...guestSessionHeaders(path),
         ...init?.headers,
       },
     });
@@ -101,13 +115,17 @@ export async function createGuestSession(
   slug: string,
   data: { firstName: string; lastName?: string },
 ): Promise<GuestSessionResponse> {
-  return apiFetch<GuestSessionResponse>(
+  const result = await apiFetch<GuestSessionResponse>(
     `/public/events/${encodeURIComponent(slug)}/guest-session`,
     {
       method: "POST",
       body: JSON.stringify(data),
     },
   );
+  if (result.sessionToken) {
+    setGuestSessionToken(slug, result.sessionToken);
+  }
+  return result;
 }
 
 export async function initUpload(

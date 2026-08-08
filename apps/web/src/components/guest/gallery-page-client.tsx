@@ -171,10 +171,18 @@ export function GalleryPageClient({ slug, event }: GalleryPageClientProps) {
         slug={slug}
         open
         onClose={() => router.replace(`/${slug}`)}
-        onSuccess={() => {
+        onSuccess={async () => {
+          const active = await checkGuestSession(slug);
+          if (!active) {
+            setError(
+              "Could not start your session. Refresh and try again, or open in Chrome/Safari.",
+            );
+            return;
+          }
           setNeedsName(false);
           setSessionReady(true);
-          void loadGallery();
+          setError(null);
+          await loadGallery();
         }}
       />
     );

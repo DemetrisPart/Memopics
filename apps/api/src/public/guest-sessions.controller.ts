@@ -56,10 +56,13 @@ export class GuestSessionsController {
 
     this.guestSessionsService.setGuestSessionCookie(res, sessionToken);
 
+    const isProd = this.config.get("NODE_ENV") === "production";
+
     return {
       firstName: session.firstName,
       lastName: session.lastName,
       expiresInHours: 24,
+      ...(isProd ? {} : { sessionToken }),
     };
   }
 }
