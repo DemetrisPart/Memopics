@@ -77,7 +77,6 @@ async function completeAndGoToDashboard(pollToken: string): Promise<void> {
 }
 
 export function MagicLinkWaiting({
-  email,
   pollToken,
   verificationToken,
   onBack,
@@ -191,24 +190,17 @@ export function MagicLinkWaiting({
           Check your email
         </h1>
         <p className="mt-3 text-sm text-stone-400">
-          We sent an approval to{" "}
-          <strong className="text-charcoal-800">{email}</strong>. Tap{" "}
-          <strong className="text-charcoal-800">Approve sign in</strong> in your
-          inbox — this screen will continue automatically.
+          We’ve sent a verification request to your email.
+          <br />
+          Open the email and{" "}
+          <strong className="text-charcoal-800">approve</strong> the sign-in to
+          continue.
         </p>
 
         {approved ? (
           <div className="mt-8 flex flex-col items-center gap-3">
             <div className="h-8 w-8 animate-spin rounded-full border-2 border-gold-600/30 border-t-gold-600" />
-            <p className="text-sm font-medium text-emerald-700">
-              Approved — finishing sign-in…
-            </p>
-            <Button
-              className="w-full"
-              onClick={() => finishSignIn(true)}
-            >
-              Continue to dashboard
-            </Button>
+            <p className="text-sm font-medium text-emerald-700">Approved</p>
           </div>
         ) : (
           <div className="mt-8 flex flex-col items-center gap-3">
