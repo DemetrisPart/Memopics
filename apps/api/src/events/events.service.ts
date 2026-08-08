@@ -15,7 +15,7 @@ import {
   PrivacyMode,
   type Event,
   type MediaAsset,
-} from "@memopics/database";
+} from "@momeva/database";
 import {
   STORAGE_SERVICE,
   buildEventTitle,
@@ -24,8 +24,8 @@ import {
   normalizeEventSlug,
   validateEventSlug,
   type StorageService,
-} from "@memopics/domain";
-import { ALLOWED_PHOTO_MIME_TYPES, MVP_DEFAULTS } from "@memopics/shared";
+} from "@momeva/domain";
+import { ALLOWED_PHOTO_MIME_TYPES, MVP_DEFAULTS } from "@momeva/shared";
 import { generateSecureToken } from "../common/crypto.util";
 import { PrismaService } from "../prisma/prisma.service";
 import { QrService } from "./qr.service";

@@ -9,15 +9,15 @@ if %errorLevel% neq 0 (
   exit /b
 )
 
-echo Adding Memopics dev firewall rules...
+echo Adding Momeva dev firewall rules...
 
-netsh advfirewall firewall add rule name="Memopics Web Dev 3000" dir=in action=allow protocol=TCP localport=3000 profile=private,public,domain 2>nul
+netsh advfirewall firewall add rule name="Momeva Web Dev 3000" dir=in action=allow protocol=TCP localport=3000 profile=private,public,domain 2>nul
 if %errorLevel% equ 0 (echo OK: port 3000) else (echo Rule may already exist for port 3000)
 
-netsh advfirewall firewall add rule name="Memopics MinIO Dev 9000" dir=in action=allow protocol=TCP localport=9000 profile=private,public,domain 2>nul
+netsh advfirewall firewall add rule name="Momeva MinIO Dev 9000" dir=in action=allow protocol=TCP localport=9000 profile=private,public,domain 2>nul
 if %errorLevel% equ 0 (echo OK: port 9000) else (echo Rule may already exist for port 9000)
 
-netsh advfirewall firewall add rule name="Memopics Node.js Dev" dir=in action=allow program="C:\Program Files\nodejs\node.exe" enable=yes profile=private,public,domain 2>nul
+netsh advfirewall firewall add rule name="Momeva Node.js Dev" dir=in action=allow program="C:\Program Files\nodejs\node.exe" enable=yes profile=private,public,domain 2>nul
 if %errorLevel% equ 0 (echo OK: Node.js) else (echo Node.js rule may already exist)
 
 echo.

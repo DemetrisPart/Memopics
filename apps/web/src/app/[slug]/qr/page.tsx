@@ -13,11 +13,11 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     const { slug } = await params;
     const qr = await fetchPublicEventQr(slug);
     return {
-      title: `QR Code — ${qr.title} | Memopics`,
+      title: `QR Code — ${qr.title} | Momeva`,
       robots: { index: false, follow: false },
     };
   } catch {
-    return { title: "QR Code | Memopics", robots: { index: false } };
+    return { title: "QR Code | Momeva", robots: { index: false } };
   }
 }
 

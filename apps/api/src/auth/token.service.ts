@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { JwtService } from "@nestjs/jwt";
-import type { AuthTokens, JwtPayload } from "@memopics/domain";
+import type { AuthTokens, JwtPayload } from "@momeva/domain";
 import { addDays, addMinutes } from "../common/crypto.util";
 
 const ACCESS_TTL_MINUTES = 15;

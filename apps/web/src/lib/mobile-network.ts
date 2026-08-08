@@ -1,6 +1,6 @@
 export type NetworkMode = "lan" | "public";
 
-const MODE_KEY = "memopics_network_mode";
+const MODE_KEY = "momeva_network_mode";
 
 type UrlSet = {
   url: string;
@@ -110,7 +110,7 @@ export function getRedirectTarget(
   return `${targetOrigin}${path}${window.location.search}`;
 }
 
-const PROBE_DONE_KEY = "memopics_network_probe_done";
+const PROBE_DONE_KEY = "momeva_network_probe_done";
 
 export function hasCachedNetworkProbe(): boolean {
   if (typeof window === "undefined") return false;

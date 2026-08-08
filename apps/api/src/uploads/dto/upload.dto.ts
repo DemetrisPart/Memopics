@@ -10,7 +10,7 @@ import {
   ValidateNested,
 } from "class-validator";
 import { Type } from "class-transformer";
-import { MVP_DEFAULTS } from "@memopics/shared";
+import { MVP_DEFAULTS } from "@momeva/shared";
 
 export class UploadFileItemDto {
   @IsString()

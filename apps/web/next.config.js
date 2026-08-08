@@ -1,6 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  transpilePackages: ["@memopics/shared"],
+  transpilePackages: ["@momeva/shared"],
   /** Allow phone/LAN access in dev (fixes blank page when not using localhost). */
   allowedDevOrigins: [
     "172.20.10.6",

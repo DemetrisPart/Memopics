@@ -48,7 +48,7 @@ export class HealthController {
 
     return {
       status: database === "ok" && queueHealthy ? "ok" : "degraded",
-      service: "memopics-api",
+      service: "Momeva-api",
       database,
       queue,
     };

@@ -1,5 +1,5 @@
 {
-  "name": "@memopics/logging",
+  "name": "@momeva/logging",
   "version": "0.0.1",
   "private": true,
   "main": "./dist/index.js",
@@ -9,7 +9,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@memopics/shared": "workspace:*",
+    "@momeva/shared": "workspace:*",
     "pino": "^9.6.0"
   },
   "devDependencies": {

@@ -117,7 +117,7 @@ export function CreateEventForm() {
           placeholder="demetris-daniella-2026"
         />
         <p className="mt-1 text-xs text-stone-400">
-          memopics.com/{slug || "your-event"}
+          momeva.com/{slug || "your-event"}
           {slugStatus === "checking" ? " — checking…" : null}
           {slugStatus === "available" ? " — available ✓" : null}
           {slugStatus === "taken" ? " — already taken" : null}

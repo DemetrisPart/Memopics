@@ -1,9 +1,9 @@
-import { logWorkerError, logMetric } from "@memopics/logging";
+import { logWorkerError, logMetric } from "@momeva/logging";
 import {
   MEDIA_PROCESS_IMAGE_JOB,
   MEDIA_QUEUE_NAME,
-} from "@memopics/shared";
-import { createStorageServiceFromEnv, type S3StorageService } from "@memopics/storage";
+} from "@momeva/shared";
+import { createStorageServiceFromEnv, type S3StorageService } from "@momeva/storage";
 import { Job, Worker } from "bullmq";
 import IORedis from "ioredis";
 import sharp from "sharp";
@@ -11,12 +11,12 @@ import {
   MediaAssetStatus,
   MediaVariantType,
   prisma,
-} from "@memopics/database";
+} from "@momeva/database";
 import {
   buildMediaVariantKey,
   IMAGE_VARIANT_SPECS,
   type MediaProcessImageJobPayload,
-} from "@memopics/domain";
+} from "@momeva/domain";
 
 let storage: S3StorageService | undefined;
 

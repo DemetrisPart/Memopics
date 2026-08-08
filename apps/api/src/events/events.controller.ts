@@ -8,7 +8,7 @@ import {
   StreamableFile,
   UseGuards,
 } from "@nestjs/common";
-import type { JwtPayload } from "@memopics/domain";
+import type { JwtPayload } from "@momeva/domain";
 import { CurrentUser, JwtAuthGuard } from "../auth/auth.guard";
 import {
   CoverUploadCompleteDto,

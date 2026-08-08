@@ -14,8 +14,8 @@ import type {
   PresignedUrlSet,
   PutObjectOptions,
   StorageService,
-} from "@memopics/domain";
-import { MVP_DEFAULTS } from "@memopics/shared";
+} from "@momeva/domain";
+import { MVP_DEFAULTS } from "@momeva/shared";
 import { Readable } from "node:stream";
 
 async function streamToBuffer(body: unknown): Promise<Buffer> {

@@ -1,6 +1,6 @@
 # Stage 2 — UI/UX Design
 
-**Project:** Memopics  
+**Project:** Momeva  
 **Status:** Finalized — design specification only, no application code  
 **Version:** 2.1 (post-refinement)  
 **Inputs:** Stage 0 business decisions + Stage 1 architecture (Next.js, Tailwind, shadcn/ui, EN + EL)
@@ -33,7 +33,7 @@
 
 ### 1.1 Core UX Principles
 
-| Principle | Meaning for Memopics |
+| Principle | Meaning for Momeva |
 |---|---|
 | **Guest-first speed** | A guest at a wedding table must upload in under 30 seconds after scanning QR |
 | **Speed over animation** | Loading performance prioritized on event pages; animations never block interaction |
@@ -44,18 +44,18 @@
 
 ### 1.2 Three Experience Modes
 
-Memopics has three distinct UI modes sharing one design system but different emotional weight:
+Momeva has three distinct UI modes sharing one design system but different emotional weight:
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │  MARKETING          │  GUEST (Event)       │  DASHBOARD          │
 │  Acquire couples    │  Capture memories    │  Manage & download  │
 │  Brand-forward      │  Emotion-forward     │  Utility-forward    │
-│  Full Memopics brand│  Couple-branded page │  Memopics admin shell │
+│  Full Momeva brand│  Couple-branded page │  Momeva admin shell │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-**Decision:** Guest event pages are **couple-branded** (their names, cover photo, date dominate). Memopics branding is subtle ("Powered by Memopics" footer). Marketing and dashboards use full Memopics brand.
+**Decision:** Guest event pages are **couple-branded** (their names, cover photo, date dominate). Momeva branding is subtle ("Powered by Momeva" footer). Marketing and dashboards use full Momeva brand.
 
 **Why:** Couples pay for a premium experience that feels personal, not like a generic SaaS tool at their wedding.
 
@@ -65,7 +65,7 @@ Memopics has three distinct UI modes sharing one design system but different emo
 
 ### 2.1 Positioning Statement
 
-> **Memopics** is the premium digital memory platform for life's most important gatherings — where every guest contributes, and every moment is preserved with elegance.
+> **Momeva** is the premium digital memory platform for life's most important gatherings — where every guest contributes, and every moment is preserved with elegance.
 
 **Not:** A cheap upload box, a wedding planner app, or a social network.
 
@@ -95,7 +95,7 @@ Memopics has three distinct UI modes sharing one design system but different emo
 **Mood board keywords:** Sunlit terrace, linen texture, soft gold foil stamp, olive grove, evening candlelight.
 
 **Logo direction (for Stage 3 implementation):**
-- Wordmark: **Memopics** in refined serif or serif/sans hybrid
+- Wordmark: **Momeva** in refined serif or serif/sans hybrid
 - Icon: Abstract overlapping frames or aperture suggesting collected perspectives
 - Minimum clear space: 1× cap height on all sides
 - Never: hearts, rings, camera clip-art in logo
@@ -128,9 +128,9 @@ Couple can customize: cover image, names, date, optional accent override (Premiu
 
 ### 3.2 shadcn/ui Customization Strategy
 
-shadcn/ui defaults are neutral/gray — **must be re-themed** to Memopics tokens.
+shadcn/ui defaults are neutral/gray — **must be re-themed** to Momeva tokens.
 
-| shadcn token | Memopics mapping |
+| shadcn token | Momeva mapping |
 |---|---|
 | `--background` | `ivory-50` |
 | `--foreground` | `charcoal-900` |
@@ -367,7 +367,7 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    A[Land on memopics.com] --> B[View Pricing]
+    A[Land on momeva.com] --> B[View Pricing]
     B --> C[Select Plan Basic / Standard / Premium]
     C --> D[Stripe Checkout]
     D --> E[Magic link email verification]
@@ -415,7 +415,7 @@ flowchart TD
 ### 8.1 Site Map
 
 ```
-memopics.com/
+momeva.com/
 ├── /                          Marketing homepage
 ├── /pricing                   Plans (€29 / €59 / €129)
 ├── /how-it-works              Product explanation
@@ -505,7 +505,7 @@ memopics.com/
 ├─────────────────────────────────┤
 │  🔒 You only see your uploads   │  ← privacy badge (default)
 │                                 │
-│         Powered by Memopics       │  ← subtle footer
+│         Powered by Momeva       │  ← subtle footer
 └─────────────────────────────────┘
 ```
 
@@ -607,7 +607,7 @@ memopics.com/
 
 ```
 ┌─────────────────────────────────┐
-│  Memopics          🔔  👤      │
+│  Momeva          🔔  👤      │
 ├─────────────────────────────────┤
 │  Demetris & Daniella            │
 │  ● Active · 12 days left        │  ← EventHealthIndicator pill
@@ -642,7 +642,7 @@ memopics.com/
 
 ```
 ┌──────────┬──────────────────────────────────────────────────┐
-│ Memopics │  Demetris & Daniella          Active  🔔  Avatar  │
+│ Momeva │  Demetris & Daniella          Active  🔔  Avatar  │
 │          ├──────────────────────────────────────────────────┤
 │ Dashboard│  ┌─────────────┐ ┌─────────────┐ ┌─────────────┐  │
 │ Gallery  │  │ Storage 66% │ │ 847 Photos  │ │ 62 Videos   │  │
@@ -661,7 +661,7 @@ memopics.com/
 
 ```
 ┌─────────────────────────────────┐
-│  Memopics              ☰       │
+│  Momeva              ☰       │
 ├─────────────────────────────────┤
 │                                 │
 │  Every moment.                  │  ← display-lg serif
@@ -705,7 +705,7 @@ memopics.com/
 | `Switch` | — | Privacy toggle |
 | `Select` | — | Plan selection, filters |
 
-#### Custom Patterns (Memopics-specific)
+#### Custom Patterns (Momeva-specific)
 
 | Component | Description | Used in |
 |---|---|---|
@@ -732,7 +732,7 @@ memopics.com/
 | `RecentUploadFeed` | Guest name + thumb + timestamp | Dashboard home |
 | `AIJobCard` | Job type, status, progress, preview | AI page |
 | `EmptyState` | Illustration + message + CTA | Zero uploads |
-| `PoweredByFooter` | Subtle Memopics link | Event pages |
+| `PoweredByFooter` | Subtle Momeva link | Event pages |
 
 ### 10.2 Component States (Required for Every Interactive Component)
 
@@ -1089,7 +1089,7 @@ Event pages prioritize **load speed for QR scans** over SEO — SSR + CDN cache 
 | 1 | Brand direction: **Modern Mediterranean Luxury** | ✅ Recommended |
 | 2 | Fonts: **Cormorant Garamond + DM Sans** | ✅ Recommended |
 | 3 | Primary accent: **Champagne gold `#A68B4B`** on ivory | ✅ Recommended |
-| 4 | Guest pages: **couple-branded**, Memopics subtle footer | ✅ Recommended |
+| 4 | Guest pages: **couple-branded**, Momeva subtle footer | ✅ Recommended |
 | 5 | Guest name gate: **modal on landing**, first name + optional last name | ✅ Recommended |
 | 6 | Mobile guest CTAs: **full-width sticky bottom** | ✅ Recommended |
 | 7 | Videos: **separate section**, not mixed in photo grid | ✅ Recommended |
@@ -1155,7 +1155,7 @@ Summary of approved refinements applied to this document:
 ## Appendix B — PWA Install Prompt (Stage 5 — Design Prepared Now)
 
 - Custom install banner on couple dashboard (not guest pages — guests shouldn't need PWA)
-- Copy: "Add Memopics to your home screen for quick access to your gallery"
+- Copy: "Add Momeva to your home screen for quick access to your gallery"
 - Deferred to Stage 5 implementation; design slot reserved in dashboard header
 
 ---

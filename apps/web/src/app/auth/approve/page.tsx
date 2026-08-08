@@ -59,7 +59,7 @@ function ApproveContent() {
     <div className="w-full max-w-md rounded-2xl border border-stone-200 bg-white p-8 text-center shadow-soft">
       <h1 className="text-2xl font-semibold text-charcoal-900">Approved</h1>
       <p className="mt-3 text-sm text-stone-400">
-        Return to Memopics on your other device — it will sign you in
+        Return to Momeva on your other device — it will sign you in
         automatically. You can close this tab.
       </p>
     </div>

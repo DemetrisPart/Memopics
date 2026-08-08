@@ -15,7 +15,7 @@ export const GUEST_THEME_IDS = [
 
 export type GuestThemeId = (typeof GUEST_THEME_IDS)[number];
 
-export const GUEST_THEME_STORAGE_KEY = "memopics_guest_theme";
+export const GUEST_THEME_STORAGE_KEY = "momeva_guest_theme";
 
 export const GUEST_THEME_LABELS: Record<
   GuestThemeId,

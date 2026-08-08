@@ -1,7 +1,7 @@
 import { Injectable, NestMiddleware } from "@nestjs/common";
 import type { NextFunction, Request, Response } from "express";
-import { generateRequestId, logRequest, logSlowRequest } from "@memopics/logging";
-import { SLOW_REQUEST_THRESHOLD_MS } from "@memopics/shared";
+import { generateRequestId, logRequest, logSlowRequest } from "@momeva/logging";
+import { SLOW_REQUEST_THRESHOLD_MS } from "@momeva/shared";
 
 @Injectable()
 export class RequestLoggingMiddleware implements NestMiddleware {

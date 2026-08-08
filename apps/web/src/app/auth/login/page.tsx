@@ -9,7 +9,7 @@ import { register, requestMagicLink } from "@/lib/api/dashboard-client";
 import { warmupAuthRoutes } from "@/lib/auth/warmup-verify-route";
 import { ApiError } from "@/lib/api/types";
 
-const VERIFY_STORAGE_KEY = "memopics_verification_token";
+const VERIFY_STORAGE_KEY = "momeva_verification_token";
 
 type AuthMode = "login" | "register";
 
@@ -52,7 +52,7 @@ export default function LoginPage() {
           href="/"
           className="text-xs font-medium text-stone-400 hover:text-charcoal-800"
         >
-          ← Memopics
+          ← Momeva
         </Link>
         <h1 className="mt-4 text-2xl font-semibold text-charcoal-900">
           {mode === "login" ? "Sign in" : "Create account"}
@@ -80,7 +80,7 @@ export default function LoginPage() {
         </form>
 
         <p className="mt-6 text-center text-sm text-stone-400">
-          {mode === "login" ? "New to Memopics?" : "Already have an account?"}{" "}
+          {mode === "login" ? "New to Momeva?" : "Already have an account?"}{" "}
           <button
             type="button"
             className="font-medium text-gold-700 hover:underline"

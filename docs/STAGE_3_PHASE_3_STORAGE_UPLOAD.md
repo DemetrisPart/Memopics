@@ -1,6 +1,6 @@
 # Stage 3 — Phase 3: Storage & Upload Pipeline
 
-**Project:** Memopics  
+**Project:** Momeva  
 **Parent stage:** [Stage 3 — MVP Build](./STAGE_3_MVP_PLAN.md)  
 **Status:** Complete — ready for review  
 **Completion log:** [PHASE_3_COMPLETE.md](./PHASE_3_COMPLETE.md)  
@@ -176,7 +176,7 @@ Phase 4 builds the name-entry UI. Phase 3 implements the **backend** so uploads 
 
 1. Guest POSTs first name (+ optional last name) to `/guest-session`
 2. API creates `guest_sessions` row with hashed token
-3. HTTP-only cookie `memopics_guest` set (24h TTL)
+3. HTTP-only cookie `momeva_guest` set (24h TTL)
 4. Upload endpoints require valid cookie scoped to event slug
 
 ### Cookie security
@@ -300,7 +300,7 @@ For verified media:
 ### Run locally
 
 ```bash
-pnpm --filter @memopics/worker-media dev
+pnpm --filter @momeva/worker-media dev
 ```
 
 Requires Redis + MinIO + Postgres (same `.env` as API).
@@ -325,7 +325,7 @@ Requires Redis + MinIO + Postgres (same `.env` as API).
 { "firstName": "Maria", "lastName": "K.", "expiresInHours": 24 }
 ```
 
-Sets `memopics_guest` cookie.
+Sets `momeva_guest` cookie.
 
 ---
 
@@ -430,7 +430,7 @@ No schema migration required — uses existing tables from Phase 0:
 | `DATABASE_URL` | Prisma (API + worker) |
 | `STORAGE_*` | MinIO/R2 credentials |
 | `APP_ENV` | Storage key prefix |
-| `GUEST_SESSION_COOKIE` | Cookie name (default: `memopics_guest`) |
+| `GUEST_SESSION_COOKIE` | Cookie name (default: `momeva_guest`) |
 
 See [`.env.example`](../.env.example).
 
@@ -514,10 +514,10 @@ pnpm docker:up
 pnpm db:migrate:deploy
 
 # Terminal 1 — API
-pnpm --filter @memopics/api dev
+pnpm --filter @momeva/api dev
 
 # Terminal 2 — Worker
-pnpm --filter @memopics/worker-media dev
+pnpm --filter @momeva/worker-media dev
 ```
 
 ### Full curl flow (after couple creates event)

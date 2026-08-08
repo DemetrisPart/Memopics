@@ -1,7 +1,7 @@
 import { Global, Module } from "@nestjs/common";
-import { STORAGE_SERVICE } from "@memopics/domain";
-import { createStorageServiceFromEnv } from "@memopics/storage";
-import type { StorageService } from "@memopics/domain";
+import { STORAGE_SERVICE } from "@momeva/domain";
+import { createStorageServiceFromEnv } from "@momeva/storage";
+import type { StorageService } from "@momeva/domain";
 
 @Global()
 @Module({

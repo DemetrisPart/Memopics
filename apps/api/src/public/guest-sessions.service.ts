@@ -1,12 +1,12 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import type { Response } from "express";
-import { EventStatus } from "@memopics/database";
+import { EventStatus } from "@momeva/database";
 import {
   normalizeEventSlug,
   validateEventSlug,
-} from "@memopics/domain";
-import { MVP_DEFAULTS } from "@memopics/shared";
+} from "@momeva/domain";
+import { MVP_DEFAULTS } from "@momeva/shared";
 import {
   generateSecureToken,
   hashToken,
@@ -91,7 +91,7 @@ export class GuestSessionsService {
     const isProd = this.config.get("NODE_ENV") === "production";
     const cookieName = this.config.get<string>(
       "GUEST_SESSION_COOKIE",
-      "memopics_guest",
+      "momeva_guest",
     );
     const maxAgeMs =
       MVP_DEFAULTS.GUEST_SESSION_TTL_HOURS * 60 * 60 * 1000;

@@ -1,4 +1,4 @@
-const KEY_PREFIX = "memopics_guest_token:";
+const KEY_PREFIX = "momeva_guest_token:";
 
 export function setGuestSessionToken(slug: string, token: string): void {
   sessionStorage.setItem(`${KEY_PREFIX}${slug}`, token);

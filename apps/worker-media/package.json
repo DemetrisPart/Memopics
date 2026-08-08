@@ -1,5 +1,5 @@
 {
-  "name": "@memopics/worker-media",
+  "name": "@momeva/worker-media",
   "version": "0.0.1",
   "private": true,
   "scripts": {
@@ -9,11 +9,11 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@memopics/database": "workspace:*",
-    "@memopics/domain": "workspace:*",
-    "@memopics/logging": "workspace:*",
-    "@memopics/shared": "workspace:*",
-    "@memopics/storage": "workspace:*",
+    "@momeva/database": "workspace:*",
+    "@momeva/domain": "workspace:*",
+    "@momeva/logging": "workspace:*",
+    "@momeva/shared": "workspace:*",
+    "@momeva/storage": "workspace:*",
     "bullmq": "^5.41.0",
     "dotenv": "^16.4.7",
     "ioredis": "^5.4.2",

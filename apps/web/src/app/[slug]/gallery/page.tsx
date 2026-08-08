@@ -13,11 +13,11 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     const { slug } = await params;
     const event = await fetchPublicEvent(slug);
     return {
-      title: `Gallery — ${event.title} | Memopics`,
+      title: `Gallery — ${event.title} | Momeva`,
       robots: { index: false, follow: false },
     };
   } catch {
-    return { title: "Gallery | Memopics", robots: { index: false } };
+    return { title: "Gallery | Momeva", robots: { index: false } };
   }
 }
 

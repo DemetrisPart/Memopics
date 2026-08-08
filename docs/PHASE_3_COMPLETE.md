@@ -39,8 +39,8 @@ PENDING → (complete + verify) → PROCESSING → (worker) → ACTIVE
 ```bash
 pnpm docker:up
 pnpm db:migrate:deploy
-pnpm --filter @memopics/api dev          # terminal 1
-pnpm --filter @memopics/worker-media dev # terminal 2
+pnpm --filter @momeva/api dev          # terminal 1
+pnpm --filter @momeva/worker-media dev # terminal 2
 ```
 
 ### Hardening verification

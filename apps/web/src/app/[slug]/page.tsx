@@ -14,7 +14,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     const { slug } = await params;
     const event = await fetchPublicEvent(slug);
     return {
-      title: `${event.title} | Memopics`,
+      title: `${event.title} | Momeva`,
       description: `Share photos from ${event.title}`,
       robots: { index: false, follow: false },
       openGraph: {
@@ -24,7 +24,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       },
     };
   } catch {
-    return { title: "Event | Memopics", robots: { index: false } };
+    return { title: "Event | Momeva", robots: { index: false } };
   }
 }
 

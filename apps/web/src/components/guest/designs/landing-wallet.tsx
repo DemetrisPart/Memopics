@@ -19,7 +19,7 @@ export function LandingWallet({ event, onUpload, onGallery }: LandingDesignProps
         <article className="design-wallet-pass">
           <header className="design-wallet-pass-head">
             <QrCode className="size-4 opacity-70" aria-hidden />
-            <span>MEMOPICS PASS</span>
+            <span>Momeva PASS</span>
           </header>
 
           <div className="design-wallet-strip">

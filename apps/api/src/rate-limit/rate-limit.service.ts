@@ -5,7 +5,7 @@ import {
   OnModuleDestroy,
 } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
-import { RATE_LIMITS } from "@memopics/shared";
+import { RATE_LIMITS } from "@momeva/shared";
 import IORedis from "ioredis";
 
 export class RateLimitExceededException extends HttpException {

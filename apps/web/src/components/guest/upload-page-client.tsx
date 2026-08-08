@@ -70,7 +70,7 @@ export function UploadPageClient({ slug, event }: UploadPageClientProps) {
 
   useEffect(() => {
     setPrivacyDismissed(
-      sessionStorage.getItem(`memopics_privacy_notice_dismissed_${slug}`) === "1",
+      sessionStorage.getItem(`momeva_privacy_notice_dismissed_${slug}`) === "1",
     );
   }, [slug]);
 

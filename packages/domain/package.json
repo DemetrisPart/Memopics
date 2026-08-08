@@ -1,5 +1,5 @@
 {
-  "name": "@memopics/domain",
+  "name": "@momeva/domain",
   "version": "0.0.1",
   "private": true,
   "main": "./dist/index.js",

@@ -5,8 +5,8 @@
 $ErrorActionPreference = "Stop"
 
 $rules = @(
-  @{ Name = "Memopics Web Dev 3000"; Port = 3000 },
-  @{ Name = "Memopics MinIO Dev 9000"; Port = 9000 }
+  @{ Name = "Momeva Web Dev 3000"; Port = 3000 },
+  @{ Name = "Momeva MinIO Dev 9000"; Port = 9000 }
 )
 
 foreach ($rule in $rules) {

@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import QRCode from "qrcode";
-import { buildPublicEventUrl } from "@memopics/domain";
+import { buildPublicEventUrl } from "@momeva/domain";
 
 @Injectable()
 export class QrService {

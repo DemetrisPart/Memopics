@@ -18,7 +18,7 @@ export const RESERVED_EVENT_SLUGS = new Set([
   "sitemap.xml",
 ]);
 
-/** memopics.com/demetris-daniella */
+/** momeva.com/demetris-daniella */
 export const EVENT_SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
 export const EVENT_SLUG_MIN_LENGTH = 3;

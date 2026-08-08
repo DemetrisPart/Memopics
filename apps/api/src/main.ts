@@ -3,8 +3,8 @@ import { ConfigService } from "@nestjs/config";
 import { NestFactory } from "@nestjs/core";
 import cookieParser from "cookie-parser";
 import helmet from "helmet";
-import { getLogger } from "@memopics/logging";
-import { API_REQUEST_TIMEOUT_MS } from "@memopics/shared";
+import { getLogger } from "@momeva/logging";
+import { API_REQUEST_TIMEOUT_MS } from "@momeva/shared";
 import { AppModule } from "./app.module";
 import { GlobalExceptionFilter } from "./common/global-exception.filter";
 
@@ -38,7 +38,7 @@ async function bootstrap(): Promise<void> {
 
   logger.info(
     { port, requestTimeoutMs: API_REQUEST_TIMEOUT_MS },
-    "Memopics API listening",
+    "Momeva API listening",
   );
 }
 

@@ -1,11 +1,11 @@
-# Memopics
+# Momeva
 
 Premium event memory platform — guests scan QR, upload photos, couples manage galleries.
 
 ## Monorepo Structure
 
 ```
-memopics/
+Momeva/
 ├── apps/
 │   ├── web/              # Next.js 15 — guest pages + couple dashboard
 │   ├── api/              # NestJS REST API
@@ -64,8 +64,8 @@ pnpm dev
 - [x] Turborepo monorepo (pnpm)
 - [x] Expo moved to `legacy/expo/`
 - [x] Prisma schema with timestamps, soft delete, event lifecycle, media types
-- [x] `StorageService` abstraction (`@memopics/domain` + `@memopics/storage`)
-- [x] Structured logging (`@memopics/logging`)
+- [x] `StorageService` abstraction (`@momeva/domain` + `@momeva/storage`)
+- [x] Structured logging (`@momeva/logging`)
 - [x] Docker Compose (Postgres, Redis, MinIO, Mailpit)
 - [x] App stubs: web, api, worker-media
 

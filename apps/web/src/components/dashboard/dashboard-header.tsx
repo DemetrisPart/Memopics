@@ -24,7 +24,7 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
     <header className="border-b border-stone-200 bg-white px-4 py-3 lg:px-8">
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-4">
         <div>
-          <p className="text-sm font-semibold text-charcoal-900">Memopics</p>
+          <p className="text-sm font-semibold text-charcoal-900">Momeva</p>
           <p className="text-xs text-stone-400">{user.email}</p>
         </div>
         <button

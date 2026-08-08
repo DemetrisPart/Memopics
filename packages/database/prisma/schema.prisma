@@ -1,4 +1,4 @@
-// Prisma schema — Memopics MVP
+// Prisma schema — Momeva MVP
 // Timestamps + soft delete on important tables for GDPR, expiration, recovery.
 
 generator client {

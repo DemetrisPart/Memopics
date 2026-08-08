@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import pino, { type Logger as PinoLogger } from "pino";
-import { LOG_CATEGORIES, type LogCategory } from "@memopics/shared";
+import { LOG_CATEGORIES, type LogCategory } from "@momeva/shared";
 
 export type AppLogger = PinoLogger;
 
@@ -16,7 +16,7 @@ export interface LoggerContext {
 function baseLogger(): PinoLogger {
   return pino({
     level: process.env.LOG_LEVEL ?? "info",
-    base: { service: process.env.SERVICE_NAME ?? "memopics" },
+    base: { service: process.env.SERVICE_NAME ?? "Momeva" },
     timestamp: pino.stdTimeFunctions.isoTime,
     formatters: {
       level: (label) => ({ level: label }),

@@ -20,19 +20,19 @@ importers:
 
   apps/api:
     dependencies:
-      '@memopics/database':
+      '@momeva/database':
         specifier: workspace:*
         version: link:../../packages/database
-      '@memopics/domain':
+      '@momeva/domain':
         specifier: workspace:*
         version: link:../../packages/domain
-      '@memopics/logging':
+      '@momeva/logging':
         specifier: workspace:*
         version: link:../../packages/logging
-      '@memopics/shared':
+      '@momeva/shared':
         specifier: workspace:*
         version: link:../../packages/shared
-      '@memopics/storage':
+      '@momeva/storage':
         specifier: workspace:*
         version: link:../../packages/storage
       '@nestjs/common':
@@ -108,7 +108,7 @@ importers:
 
   apps/web:
     dependencies:
-      '@memopics/shared':
+      '@momeva/shared':
         specifier: workspace:*
         version: link:../../packages/shared
       '@tailwindcss/postcss':
@@ -148,19 +148,19 @@ importers:
 
   apps/worker-media:
     dependencies:
-      '@memopics/database':
+      '@momeva/database':
         specifier: workspace:*
         version: link:../../packages/database
-      '@memopics/domain':
+      '@momeva/domain':
         specifier: workspace:*
         version: link:../../packages/domain
-      '@memopics/logging':
+      '@momeva/logging':
         specifier: workspace:*
         version: link:../../packages/logging
-      '@memopics/shared':
+      '@momeva/shared':
         specifier: workspace:*
         version: link:../../packages/shared
-      '@memopics/storage':
+      '@momeva/storage':
         specifier: workspace:*
         version: link:../../packages/storage
       bullmq:
@@ -219,7 +219,7 @@ importers:
 
   packages/logging:
     dependencies:
-      '@memopics/shared':
+      '@momeva/shared':
         specifier: workspace:*
         version: link:../shared
       pino:
@@ -247,10 +247,10 @@ importers:
       '@aws-sdk/s3-request-presigner':
         specifier: ^3.758.0
         version: 3.1090.0
-      '@memopics/domain':
+      '@momeva/domain':
         specifier: workspace:*
         version: link:../domain
-      '@memopics/shared':
+      '@momeva/shared':
         specifier: workspace:*
         version: link:../shared
     devDependencies:

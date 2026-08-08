@@ -54,17 +54,17 @@ describe("buildEventTitle", () => {
 });
 
 describe("buildPublicEventUrl", () => {
-  it("builds memopics.com style URL", () => {
+  it("builds momeva.com style URL", () => {
     assert.equal(
-      buildPublicEventUrl("https://memopics.com", "demetris-daniella"),
-      "https://memopics.com/demetris-daniella",
+      buildPublicEventUrl("https://momeva.com", "demetris-daniella"),
+      "https://momeva.com/demetris-daniella",
     );
   });
 
   it("strips trailing slash from base URL", () => {
     assert.equal(
-      buildPublicEventUrl("https://memopics.com/", "demetris-daniella"),
-      "https://memopics.com/demetris-daniella",
+      buildPublicEventUrl("https://momeva.com/", "demetris-daniella"),
+      "https://momeva.com/demetris-daniella",
     );
   });
 

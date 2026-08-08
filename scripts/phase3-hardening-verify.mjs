@@ -81,7 +81,7 @@ async function main() {
       },
     );
     guestCookie = parseSetCookie(res.headers);
-    if (res.ok && guestCookie.includes("memopics_guest")) {
+    if (res.ok && guestCookie.includes("momeva_guest")) {
       pass("Guest session create", "cookie set");
     } else {
       fail("Guest session create", `${res.status} cookie=${guestCookie}`);
@@ -164,7 +164,7 @@ async function main() {
       for (let i = 0; i < 15; i++) {
         await new Promise((r) => setTimeout(r, 1000));
         const out = execSync(
-          `docker compose -f docker/docker-compose.yml exec -T postgres psql -U memopics -d memopics -t -c "SELECT status FROM media_assets WHERE upload_batch_id = (SELECT id FROM upload_batches WHERE id = '${batchId}'::uuid LIMIT 1) LIMIT 1;"`,
+          `docker compose -f docker/docker-compose.yml exec -T postgres psql -U momeva -d momeva -t -c "SELECT status FROM media_assets WHERE upload_batch_id = (SELECT id FROM upload_batches WHERE id = '${batchId}'::uuid LIMIT 1) LIMIT 1;"`,
           { cwd: process.cwd(), encoding: "utf8" },
         ).trim();
         if (out === "ACTIVE") {
@@ -184,7 +184,7 @@ async function main() {
 
   // 6. MinIO bucket private (anonymous GET should fail)
   try {
-    const anon = await fetch("http://localhost:9000/memopics/", { method: "GET" });
+    const anon = await fetch("http://localhost:9000/momeva/", { method: "GET" });
     if (anon.status === 403 || anon.status === 401) {
       pass("MinIO private bucket", `anonymous GET → ${anon.status}`);
     } else {
@@ -197,7 +197,7 @@ async function main() {
   // 7. DB indexes from phase3 migration
   try {
     const out = execSync(
-      `docker compose -f docker/docker-compose.yml exec -T postgres psql -U memopics -d memopics -t -c "SELECT indexname FROM pg_indexes WHERE indexname LIKE 'guest_sessions_event_id_created_at_idx' OR indexname LIKE 'media_assets_event_id_status_idx';"`,
+      `docker compose -f docker/docker-compose.yml exec -T postgres psql -U momeva -d momeva -t -c "SELECT indexname FROM pg_indexes WHERE indexname LIKE 'guest_sessions_event_id_created_at_idx' OR indexname LIKE 'media_assets_event_id_status_idx';"`,
       { cwd: process.cwd(), encoding: "utf8" },
     );
     const indexes = out.split("\n").map((l) => l.trim()).filter(Boolean);

@@ -5,8 +5,8 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from "@nestjs/common";
-import { EventStatus } from "@memopics/database";
-import type { JwtPayload } from "@memopics/domain";
+import { EventStatus } from "@momeva/database";
+import type { JwtPayload } from "@momeva/domain";
 import { PrismaService } from "../../prisma/prisma.service";
 import type { AuthenticatedRequest } from "../../auth/auth.guard";
 

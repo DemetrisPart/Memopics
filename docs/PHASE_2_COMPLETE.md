@@ -27,7 +27,7 @@
 
 ## Example
 
-Create event with URL `memopics.com/demetris-daniella`:
+Create event with URL `momeva.com/demetris-daniella`:
 
 ```json
 POST /v1/events
@@ -41,7 +41,7 @@ POST /v1/events
 
 Public page: `GET /v1/public/events/demetris-daniella`
 
-Set `PUBLIC_EVENT_BASE_URL=https://memopics.com` in production for QR codes.
+Set `PUBLIC_EVENT_BASE_URL=https://momeva.com` in production for QR codes.
 
 ## Domain
 

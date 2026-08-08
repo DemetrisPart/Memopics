@@ -20,7 +20,7 @@ export function LandingFooter({ privacyMode, className }: LandingFooterProps) {
             href="/"
             className="font-medium text-gold-600 underline-offset-2 hover:underline"
           >
-            Memopics
+            Momeva
           </Link>
         </p>
       </footer>

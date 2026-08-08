@@ -8,7 +8,7 @@ import {
 } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import type { Request, Response } from "express";
-import { getLogger } from "@memopics/logging";
+import { getLogger } from "@momeva/logging";
 
 @Injectable()
 @Catch()

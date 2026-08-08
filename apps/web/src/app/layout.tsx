@@ -14,7 +14,7 @@ const coupleFallback = Great_Vibes({
 });
 
 export const metadata: Metadata = {
-  title: "Memopics",
+  title: "Momeva",
   description: "Premium event memory platform",
 };
 
@@ -32,7 +32,7 @@ export default function RootLayout({
           id="guest-theme-init"
           strategy="beforeInteractive"
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{var t=localStorage.getItem("memopics_guest_theme");var m={atelier:"garden",lumiere:"stories",arc:"ticket",frame:"stories",postcard:"garden",mono:"wallet",cinematic:"stories","cinematic-noir":"wallet","cinematic-red":"ticket","cinematic-analog":"garden"};if(t&&m[t])t=m[t];if(t)document.documentElement.dataset.guestTheme=t}catch(e){}})();`,
+            __html: `(function(){try{var t=localStorage.getItem("momeva_guest_theme");var m={atelier:"garden",lumiere:"stories",arc:"ticket",frame:"stories",postcard:"garden",mono:"wallet",cinematic:"stories","cinematic-noir":"wallet","cinematic-red":"ticket","cinematic-analog":"garden"};if(t&&m[t])t=m[t];if(t)document.documentElement.dataset.guestTheme=t}catch(e){}})();`,
           }}
         />
         {children}

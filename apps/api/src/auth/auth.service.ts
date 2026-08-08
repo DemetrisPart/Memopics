@@ -5,7 +5,7 @@ import {
   UnauthorizedException,
 } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
-import type { AuthTokens } from "@memopics/domain";
+import type { AuthTokens } from "@momeva/domain";
 import { PrismaService } from "../prisma/prisma.service";
 import {
   addDays,

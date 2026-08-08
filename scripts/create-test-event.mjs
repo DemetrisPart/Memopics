@@ -6,7 +6,7 @@ const API = process.env.API_URL ?? "http://localhost:3001/v1";
 const MAILPIT = process.env.MAILPIT_API_URL ?? "http://localhost:8025/api/v1";
 const WEB = process.env.WEB_APP_URL ?? "http://localhost:3000";
 const SLUG = process.env.TEST_EVENT_SLUG ?? "demetris-daniella";
-const EMAIL = process.env.TEST_COUPLE_EMAIL ?? "test-couple@memopics.local";
+const EMAIL = process.env.TEST_COUPLE_EMAIL ?? "test-couple@momeva.local";
 
 function parseCookies(res) {
   const raw = res.headers.getSetCookie?.() ?? [];

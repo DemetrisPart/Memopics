@@ -1,5 +1,5 @@
 {
-  "name": "@memopics/api",
+  "name": "@momeva/api",
   "version": "0.0.1",
   "private": true,
   "scripts": {
@@ -10,11 +10,11 @@
     "lint": "echo \"lint pending\""
   },
   "dependencies": {
-    "@memopics/database": "workspace:*",
-    "@memopics/domain": "workspace:*",
-    "@memopics/logging": "workspace:*",
-    "@memopics/shared": "workspace:*",
-    "@memopics/storage": "workspace:*",
+    "@momeva/database": "workspace:*",
+    "@momeva/domain": "workspace:*",
+    "@momeva/logging": "workspace:*",
+    "@momeva/shared": "workspace:*",
+    "@momeva/storage": "workspace:*",
     "@nestjs/common": "^11.0.11",
     "@nestjs/config": "^4.0.1",
     "@nestjs/core": "^11.0.11",

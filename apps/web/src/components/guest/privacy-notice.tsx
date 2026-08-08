@@ -3,7 +3,7 @@
 import { Lock, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-const DISMISS_KEY = "memopics_privacy_notice_dismissed";
+const DISMISS_KEY = "momeva_privacy_notice_dismissed";
 
 export function dismissPrivacyNotice(slug: string): void {
   sessionStorage.setItem(`${DISMISS_KEY}_${slug}`, "1");

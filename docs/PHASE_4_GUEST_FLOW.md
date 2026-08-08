@@ -32,7 +32,7 @@ Couple prints QR  →  Guest scans QR  →  Event landing  →  Upload / Gallery
 
 ### Name entry
 
-- **Ask once** per guest session (24h cookie `memopics_guest`).
+- **Ask once** per guest session (24h cookie `momeva_guest`).
 - **Never** show name modal on landing load after QR scan.
 - **Do** show name modal when tapping Upload or Gallery if `GET /v1/public/events/:slug/guest-session` returns `{ active: false }`.
 - **Do not** re-ask after session exists (even if guest leaves and returns).
@@ -141,7 +141,7 @@ Use Safari **Private tab** or clear site data — otherwise old session cookie s
 
 ## 5. Production
 
-- Single public URL (e.g. `https://memopics.com/{slug}`).
+- Single public URL (e.g. `https://momeva.com/{slug}`).
 - Guests use Wi‑Fi, 4G, or 5G — same URL, no LAN/Tailscale setup.
 - One QR per event; many events = many unique slugs/QRs.
 

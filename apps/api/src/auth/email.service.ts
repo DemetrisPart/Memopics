@@ -33,10 +33,10 @@ export class EmailService {
     const ttlMinutes = options?.ttlMinutes ?? 15;
     const from = this.config.get<string>(
       "SMTP_FROM",
-      "Memopics <noreply@memopics.com>",
+      "Momeva <noreply@momeva.com>",
     );
     const text = [
-      "Sign in to Memopics",
+      "Sign in to Momeva",
       "",
       "Tap Approve in your browser to confirm this sign-in request:",
       approveUrl,
@@ -47,9 +47,9 @@ export class EmailService {
 
     const html = `
       <div style="font-family: system-ui, sans-serif; max-width: 480px; margin: 0 auto; padding: 24px;">
-        <h1 style="font-size: 22px; margin: 0 0 12px;">Sign in to Memopics</h1>
+        <h1 style="font-size: 22px; margin: 0 0 12px;">Sign in to Momeva</h1>
         <p style="color: #57534e; line-height: 1.5;">
-          Tap the button below to approve sign-in. Your Memopics tab will continue automatically.
+          Tap the button below to approve sign-in. Your Momeva tab will continue automatically.
         </p>
         <p style="margin: 28px 0;">
           <a href="${approveUrl}" style="display: inline-block; background: #a16207; color: #fffaf5; text-decoration: none; padding: 14px 28px; border-radius: 12px; font-weight: 600;">
@@ -66,7 +66,7 @@ export class EmailService {
       await this.getTransporter().sendMail({
         from,
         to: email,
-        subject: "Approve sign in to Memopics",
+        subject: "Approve sign in to Momeva",
         text,
         html,
       });

@@ -10,7 +10,7 @@ export function LandingEditorial({ event, onUpload, onGallery }: LandingDesignPr
   return (
     <article className="design-editorial min-h-dvh">
       <header className="design-editorial-masthead">
-        <span>Memopics</span>
+        <span>Momeva</span>
         <span className="design-editorial-vol">Celebration Issue</span>
       </header>
 

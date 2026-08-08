@@ -1,4 +1,4 @@
-import { ALLOWED_PHOTO_MIME_TYPES, MVP_DEFAULTS } from "@memopics/shared";
+import { ALLOWED_PHOTO_MIME_TYPES, MVP_DEFAULTS } from "@momeva/shared";
 
 import { inferPhotoContentType, randomId } from "./utils";
 
@@ -26,7 +26,7 @@ export type PersistedUploadSession = {
   }[];
 };
 
-const SESSION_PREFIX = "memopics_upload_";
+const SESSION_PREFIX = "momeva_upload_";
 
 export function createUploadSessionId(): string {
   return randomId();

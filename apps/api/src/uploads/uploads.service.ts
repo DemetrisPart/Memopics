@@ -12,7 +12,7 @@ import {
   MediaAssetStatus,
   MediaAssetType,
   UploadBatchStatus,
-} from "@memopics/database";
+} from "@momeva/database";
 import {
   MIME_SNIFF_BYTE_LENGTH,
   STORAGE_SERVICE,
@@ -26,9 +26,9 @@ import {
   normalizeEventSlug,
   validateEventSlug,
   type StorageService,
-} from "@memopics/domain";
-import { logUploadComplete, logUploadError, logUploadFailed, logUploadInit, logStorageUsage } from "@memopics/logging";
-import { MVP_DEFAULTS } from "@memopics/shared";
+} from "@momeva/domain";
+import { logUploadComplete, logUploadError, logUploadFailed, logUploadInit, logStorageUsage } from "@momeva/logging";
+import { MVP_DEFAULTS } from "@momeva/shared";
 import { MediaQueueService } from "../queue/media-queue.service";
 import { RateLimitService } from "../rate-limit/rate-limit.service";
 import { PrismaService } from "../prisma/prisma.service";

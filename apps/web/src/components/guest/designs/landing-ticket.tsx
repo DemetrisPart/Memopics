@@ -40,7 +40,7 @@ export function LandingTicket({ event, onUpload, onGallery }: LandingDesignProps
               className="design-ticket-names font-couple text-[1.75rem] leading-[1.05]"
             />
             <p className="design-ticket-date">{formatEventDate(event.eventDate)}</p>
-            <p className="design-ticket-venue">Memopics Live Event</p>
+            <p className="design-ticket-venue">Momeva Live Event</p>
           </div>
 
           <div className="design-ticket-barcode" aria-hidden>

@@ -1,5 +1,5 @@
 {
-  "name": "@memopics/web",
+  "name": "@momeva/web",
   "version": "0.0.1",
   "private": true,
   "scripts": {
@@ -10,7 +10,7 @@
     "lint": "echo \"lint pending\""
   },
   "dependencies": {
-    "@memopics/shared": "workspace:*",
+    "@momeva/shared": "workspace:*",
     "@tailwindcss/postcss": "^4.3.3",
     "clsx": "^2.1.1",
     "lucide-react": "^1.25.0",

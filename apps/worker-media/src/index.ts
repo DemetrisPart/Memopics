@@ -1,5 +1,5 @@
 import "./load-env";
-import { getLogger, logMetric, logWorkerError } from "@memopics/logging";
+import { getLogger, logMetric, logWorkerError } from "@momeva/logging";
 import { startMediaWorker } from "./media-processor";
 
 const logger = getLogger().child({ service: "worker-media" });
@@ -11,7 +11,7 @@ async function main(): Promise<void> {
   worker.on("ready", () => {
     logger.info(
       { concurrency: parseInt(concurrency, 10) },
-      "Memopics media worker ready — consuming media queue",
+      "Momeva media worker ready — consuming media queue",
     );
   });
 

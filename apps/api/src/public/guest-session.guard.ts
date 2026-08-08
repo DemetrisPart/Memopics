@@ -61,7 +61,7 @@ export function getGuestSessionTokenFromRequest(
 ): string | undefined {
   const cookieName = config.get<string>(
     "GUEST_SESSION_COOKIE",
-    "memopics_guest",
+    "momeva_guest",
   );
   const fromCookie = req.cookies?.[cookieName] as string | undefined;
   if (fromCookie) return fromCookie;

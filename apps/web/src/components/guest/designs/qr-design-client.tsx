@@ -118,7 +118,7 @@ export function QrDesignClient({ slug, qr }: QrDesignClientProps) {
           {back}
           <article className="design-wallet-pass design-qr-wallet mt-6 p-6 text-left">
             <header className="design-wallet-pass-head mb-4">
-              <span>MEMOPICS PASS · QR</span>
+              <span>Momeva PASS · QR</span>
             </header>
             <CoupleNamesHeading
               groomName={qr.groomName}

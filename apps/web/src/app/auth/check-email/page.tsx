@@ -6,7 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { MagicLinkWaiting } from "@/components/auth/magic-link-waiting";
 import { warmupAuthRoutes } from "@/lib/auth/warmup-verify-route";
 
-const VERIFY_STORAGE_KEY = "memopics_verification_token";
+const VERIFY_STORAGE_KEY = "momeva_verification_token";
 
 function CheckEmailContent() {
   const router = useRouter();

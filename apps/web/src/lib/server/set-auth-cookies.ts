@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
-const ACCESS_COOKIE = process.env.ACCESS_TOKEN_COOKIE ?? "memopics_access";
-const REFRESH_COOKIE = process.env.REFRESH_TOKEN_COOKIE ?? "memopics_refresh";
+const ACCESS_COOKIE = process.env.ACCESS_TOKEN_COOKIE ?? "momeva_access";
+const REFRESH_COOKIE = process.env.REFRESH_TOKEN_COOKIE ?? "momeva_refresh";
 
 export function applyAuthTokensToResponse(
   response: NextResponse,

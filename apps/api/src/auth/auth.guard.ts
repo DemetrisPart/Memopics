@@ -6,7 +6,7 @@ import {
   UnauthorizedException,
 } from "@nestjs/common";
 import type { Request, Response } from "express";
-import type { JwtPayload } from "@memopics/domain";
+import type { JwtPayload } from "@momeva/domain";
 import { ConfigService } from "@nestjs/config";
 import { TokenService } from "./token.service";
 
@@ -23,7 +23,7 @@ export class JwtAuthGuard implements CanActivate {
     const request = context.switchToHttp().getRequest<Request>();
     const cookieName = this.config.get<string>(
       "ACCESS_TOKEN_COOKIE",
-      "memopics_access",
+      "momeva_access",
     );
     const token =
       request.cookies?.[cookieName] ??
@@ -61,10 +61,10 @@ export function setAuthCookies(
   tokens: { accessToken: string; refreshToken: string },
 ): void {
   const isProd = config.get("NODE_ENV") === "production";
-  const accessName = config.get<string>("ACCESS_TOKEN_COOKIE", "memopics_access");
+  const accessName = config.get<string>("ACCESS_TOKEN_COOKIE", "momeva_access");
   const refreshName = config.get<string>(
     "REFRESH_TOKEN_COOKIE",
-    "memopics_refresh",
+    "momeva_refresh",
   );
 
   res.cookie(accessName, tokens.accessToken, {
@@ -85,10 +85,10 @@ export function setAuthCookies(
 }
 
 export function clearAuthCookies(res: Response, config: ConfigService): void {
-  const accessName = config.get<string>("ACCESS_TOKEN_COOKIE", "memopics_access");
+  const accessName = config.get<string>("ACCESS_TOKEN_COOKIE", "momeva_access");
   const refreshName = config.get<string>(
     "REFRESH_TOKEN_COOKIE",
-    "memopics_refresh",
+    "momeva_refresh",
   );
   res.clearCookie(accessName, { path: "/" });
   res.clearCookie(refreshName, { path: "/" });
@@ -100,7 +100,7 @@ export function getRefreshTokenFromRequest(
 ): string | undefined {
   const refreshName = config.get<string>(
     "REFRESH_TOKEN_COOKIE",
-    "memopics_refresh",
+    "momeva_refresh",
   );
   return req.cookies?.[refreshName];
 }

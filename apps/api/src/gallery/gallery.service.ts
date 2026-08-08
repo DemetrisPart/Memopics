@@ -10,14 +10,14 @@ import {
   MediaVariantType,
   PrivacyMode,
   type Prisma,
-} from "@memopics/database";
+} from "@momeva/database";
 import {
   STORAGE_SERVICE,
   normalizeEventSlug,
   validateEventSlug,
   type StorageService,
-} from "@memopics/domain";
-import { MVP_DEFAULTS } from "@memopics/shared";
+} from "@momeva/domain";
+import { MVP_DEFAULTS } from "@momeva/shared";
 import { PrismaService } from "../prisma/prisma.service";
 import type { GuestSessionContext } from "../public/guest-session.guard";
 

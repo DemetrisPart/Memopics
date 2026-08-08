@@ -13,7 +13,7 @@
 |---|---|---|
 | 1 | **Couple account** | Registration via email; magic link login; JWT session; dashboard access |
 | 2 | **Create event** | Bride/groom names, event title, date, slug, cover photo; unique event ID + QR code |
-| 3 | **Public event page** | `memopics.com/[slug]` — names, date, cover, Upload + Gallery CTAs |
+| 3 | **Public event page** | `momeva.com/[slug]` — names, date, cover, Upload + Gallery CTAs |
 | 4 | **Guest upload** | Name entry (first + optional last); photos only; max 10 per batch; direct-to-storage |
 | 5 | **Photo storage** | Cloudflare R2 (prod) / MinIO (local); metadata in PostgreSQL; signed URLs |
 | 6 | **Image processing** | Thumbnail + web-optimized variant (Sharp); originals preserved |
@@ -119,7 +119,7 @@ Payments · Stripe · Plans UI · AI · Video upload/processing/HLS · CDN tunin
 ### 3.1 Monorepo Structure (Stage 1 Aligned, MVP Trimmed)
 
 ```
-memopics/
+Momeva/
 ├── apps/
 │   ├── web/              # Next.js 15 — guest pages + dashboard
 │   ├── api/              # NestJS — REST API

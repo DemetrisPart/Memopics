@@ -31,4 +31,4 @@ if (content.includes(`${KEY}=`)) {
   console.log(`Added ${KEY}=${LAN_ENDPOINT} to .env`);
 }
 
-console.log("Restart the API (pnpm --filter @memopics/api dev) for changes to apply.");
+console.log("Restart the API (pnpm --filter @momeva/api dev) for changes to apply.");

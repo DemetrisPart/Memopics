@@ -1,11 +1,11 @@
 import { Injectable, OnModuleDestroy } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
-import type { MediaProcessImageJobPayload } from "@memopics/domain";
-import { logQueueMetrics, logWorkerError } from "@memopics/logging";
+import type { MediaProcessImageJobPayload } from "@momeva/domain";
+import { logQueueMetrics, logWorkerError } from "@momeva/logging";
 import {
   MEDIA_PROCESS_IMAGE_JOB,
   MEDIA_QUEUE_NAME,
-} from "@memopics/shared";
+} from "@momeva/shared";
 import { Queue } from "bullmq";
 import IORedis from "ioredis";
 

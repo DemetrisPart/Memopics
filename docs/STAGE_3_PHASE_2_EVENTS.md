@@ -1,6 +1,6 @@
 # Stage 3 — Phase 2: Events
 
-**Project:** Memopics  
+**Project:** Momeva  
 **Parent stage:** [Stage 3 — MVP Build](./STAGE_3_MVP_PLAN.md)  
 **Status:** Complete — reviewed and approved (2026-07-20)  
 **Completion log:** [PHASE_2_COMPLETE.md](./PHASE_2_COMPLETE.md)  
@@ -32,7 +32,7 @@
 
 ## 1. Purpose & Scope
 
-Phase 2 delivers the **event lifecycle backend** for the Memopics MVP: a couple creates an event with a human-readable URL (`memopics.com/demetris-daniella`), receives a QR code pointing to that URL, optionally sets a cover photo, and exposes a public API for the guest landing page.
+Phase 2 delivers the **event lifecycle backend** for the Momeva MVP: a couple creates an event with a human-readable URL (`momeva.com/demetris-daniella`), receives a QR code pointing to that URL, optionally sets a cover photo, and exposes a public API for the guest landing page.
 
 ### In Scope
 
@@ -65,7 +65,7 @@ Phase 2 delivers the **event lifecycle backend** for the Memopics MVP: a couple 
 
 From Stage 0 and the Master Prompt:
 
-- Every event has a **unique public URL**: `memopics.com/[slug]`
+- Every event has a **unique public URL**: `momeva.com/[slug]`
 - Example approved slug: **`demetris-daniella`**
 - QR codes redirect guests directly to this URL — no app install
 - Events are **isolated** — one couple's event must never expose another's data
@@ -112,7 +112,7 @@ From Stage 0 and the Master Prompt:
                               ┌───────────────▼───────────────┐
                               │  EventsService                │
                               │  + QrService                    │
-                              │  + @memopics/domain utils       │
+                              │  + @momeva/domain utils       │
                               └───────┬───────────────┬─────────┘
                                       │               │
                          ┌────────────▼──┐    ┌───────▼────────┐
@@ -182,8 +182,8 @@ Returns `{ valid, normalized?, error? }`. Fails if normalized slug is too short,
 ### Public URL builder (`buildPublicEventUrl`)
 
 ```typescript
-buildPublicEventUrl("https://memopics.com", "demetris-daniella")
-// → "https://memopics.com/demetris-daniella"
+buildPublicEventUrl("https://momeva.com", "demetris-daniella")
+// → "https://momeva.com/demetris-daniella"
 ```
 
 Strips trailing slash from base URL. Works with any deployment-level or future custom domain base.
@@ -359,7 +359,7 @@ Counts only `ACTIVE`, non-deleted media assets.
 ```json
 {
   "slug": "demetris-daniella",
-  "eventUrl": "https://memopics.com/demetris-daniella",
+  "eventUrl": "https://momeva.com/demetris-daniella",
   "qrCodePngBase64": "<base64 PNG>"
 }
 ```
@@ -514,7 +514,7 @@ Couple                    API                         Storage
 
 **URL source:**
 
-1. `PUBLIC_EVENT_BASE_URL` (production: `https://memopics.com`)
+1. `PUBLIC_EVENT_BASE_URL` (production: `https://momeva.com`)
 2. Fallback: `WEB_APP_URL`
 3. Fallback: `http://localhost:3000`
 
@@ -587,8 +587,8 @@ packages/database/prisma/
 
 | Variable | Example (local) | Production | Purpose |
 |---|---|---|---|
-| `PUBLIC_EVENT_BASE_URL` | `http://localhost:3000` | `https://memopics.com` | QR codes + `publicUrl` field |
-| `WEB_APP_URL` | `http://localhost:3000` | `https://memopics.com` | Fallback for public URL |
+| `PUBLIC_EVENT_BASE_URL` | `http://localhost:3000` | `https://momeva.com` | QR codes + `publicUrl` field |
+| `WEB_APP_URL` | `http://localhost:3000` | `https://momeva.com` | Fallback for public URL |
 | `APP_ENV` | `development` | `production` | Storage key prefix |
 | `DATABASE_URL` | Postgres connection | — | Prisma |
 | S3/MinIO vars | See `.env.example` | R2 credentials | Presigned URLs |
@@ -668,7 +668,7 @@ packages/database/prisma/
 ```bash
 pnpm docker:up
 pnpm db:migrate:deploy
-pnpm --filter @memopics/api dev
+pnpm --filter @momeva/api dev
 ```
 
 Authenticate via Phase 1 magic link flow, then:

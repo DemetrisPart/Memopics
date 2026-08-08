@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 export default function HomePage() {
   return (
     <main className="flex min-h-dvh flex-col items-center justify-center px-4 text-center">
-      <h1 className="text-4xl font-semibold text-charcoal-900">Memopics</h1>
+      <h1 className="text-4xl font-semibold text-charcoal-900">Momeva</h1>
       <p className="mt-3 max-w-md text-stone-400">
         Memories from everyone who celebrated with you.
       </p>

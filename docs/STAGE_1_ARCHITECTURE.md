@@ -1,6 +1,6 @@
 # Stage 1 — System Architecture
 
-**Project:** Memopics  
+**Project:** Momeva  
 **Status:** Architecture design only — no implementation code  
 **Approved inputs:** Stage 0 decisions (Cyprus/Greece launch, GDPR, €29/€59/€129 pricing, 100 GB Premium cap, analysis-based AI, B2C first with B2B-ready design)
 
@@ -92,7 +92,7 @@ The workspace contains an **Expo 57 starter** (`src/app/`). Stage 1 recommends *
 
 | Option | Advantages | Disadvantages | Scale | Cost |
 |---|---|---|---|---|
-| **Next.js 15 (App Router)** ✅ | SSR for `memopics.com/[slug]` SEO; PWA; React ecosystem; middleware; image optimization; industry SaaS standard | New scaffold vs existing Expo; learning App Router patterns | Excellent on Vercel Edge + ISR | Free → ~$20–500/mo |
+| **Next.js 15 (App Router)** ✅ | SSR for `momeva.com/[slug]` SEO; PWA; React ecosystem; middleware; image optimization; industry SaaS standard | New scaffold vs existing Expo; learning App Router patterns | Excellent on Vercel Edge + ISR | Free → ~$20–500/mo |
 | **Expo Web** | Already in repo; shared code if native app later | Weak SEO; RN Web limitations for luxury design; upload UX gaps; atypical for SaaS admin | Moderate | Low |
 | **Remix** | Strong routing/data loading | Smaller admin SaaS ecosystem; fewer Cyprus/EU hiring resources | Good | Similar to Next |
 
@@ -375,7 +375,7 @@ Guest Browser                    API                         R2
 ### 3.5 Future White-Label (Architecture Hook)
 
 - `organizations.custom_domain` → Cloudflare for SaaS SSL
-- `organizations.brand_config` JSON (logo, colors, hide Memopics branding)
+- `organizations.brand_config` JSON (logo, colors, hide Momeva branding)
 - Route: `custom.domain/[slug]` → same event engine
 
 Not built in MVP; schema and API versioning prepared.
@@ -582,7 +582,7 @@ Same pattern as `plan_prices` — admin-configurable, Stripe-synced.
 
 ### 5.1 Conventions
 
-- **Base URL:** `https://api.memopics.com/v1`
+- **Base URL:** `https://api.momeva.com/v1`
 - **Format:** JSON REST
 - **Auth:** `Authorization: Bearer <jwt>` (users); `X-Guest-Session: <token>` (guests)
 - **Errors:** RFC 7807 Problem Details
@@ -728,7 +728,7 @@ Same pattern as `plan_prices` — admin-configurable, Stripe-synced.
 ## 7. Folder Structure
 
 ```
-memopics/
+Momeva/
 ├── apps/
 │   ├── web/                          # Next.js 15 — marketing, event pages, dashboards
 │   │   ├── src/

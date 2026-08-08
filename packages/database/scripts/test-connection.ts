@@ -1,6 +1,6 @@
 /**
  * Database connection smoke test.
- * Usage: pnpm --filter @memopics/database test:connection
+ * Usage: pnpm --filter @momeva/database test:connection
  * Requires: DATABASE_URL in environment (see .env.example)
  */
 import { readFileSync, existsSync } from "node:fs";

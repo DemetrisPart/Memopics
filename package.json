@@ -1,20 +1,20 @@
 {
-  "name": "memopics",
+  "name": "Momeva",
   "private": true,
   "scripts": {
     "dev": "turbo dev",
     "build": "turbo build",
     "lint": "turbo lint",
     "typecheck": "turbo typecheck",
-    "db:generate": "pnpm --filter @memopics/database generate",
-    "db:migrate": "pnpm --filter @memopics/database migrate",
-    "db:migrate:deploy": "pnpm --filter @memopics/database migrate:deploy",
-    "db:push": "pnpm --filter @memopics/database push",
-    "db:test": "pnpm --filter @memopics/database test:connection",
-    "db:studio": "pnpm --filter @memopics/database studio",
+    "db:generate": "pnpm --filter @momeva/database generate",
+    "db:migrate": "pnpm --filter @momeva/database migrate",
+    "db:migrate:deploy": "pnpm --filter @momeva/database migrate:deploy",
+    "db:push": "pnpm --filter @momeva/database push",
+    "db:test": "pnpm --filter @momeva/database test:connection",
+    "db:studio": "pnpm --filter @momeva/database studio",
     "docker:up": "docker compose -f docker/docker-compose.yml up -d",
     "docker:down": "docker compose -f docker/docker-compose.yml down",
-    "worker:dev": "pnpm --filter @memopics/worker-media dev"
+    "worker:dev": "pnpm --filter @momeva/worker-media dev"
   },
   "devDependencies": {
     "@types/node": "^22.13.10",

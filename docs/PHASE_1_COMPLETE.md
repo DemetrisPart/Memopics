@@ -35,7 +35,7 @@
 
 ### Domain Layer
 
-- `@memopics/domain` — `AuthTokens`, `JwtPayload`, `StorageService` interface
+- `@momeva/domain` — `AuthTokens`, `JwtPayload`, `StorageService` interface
 
 ## Local Test Flow
 
@@ -43,7 +43,7 @@
 pnpm docker:up
 pnpm db:migrate:deploy
 pnpm db:test
-pnpm --filter @memopics/api dev
+pnpm --filter @momeva/api dev
 
 # Register
 curl -X POST http://localhost:3001/v1/auth/register \

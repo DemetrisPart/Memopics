@@ -1,5 +1,5 @@
 import { Controller, Get, UseGuards } from "@nestjs/common";
-import type { JwtPayload } from "@memopics/domain";
+import type { JwtPayload } from "@momeva/domain";
 import { AuthService } from "./auth.service";
 import { CurrentUser, JwtAuthGuard } from "./auth.guard";
 
