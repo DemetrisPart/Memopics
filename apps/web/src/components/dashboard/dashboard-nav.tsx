@@ -63,7 +63,6 @@ export function DashboardEventHeader({ event }: { event: CoupleEvent }) {
       <h1 className="mt-0.5 text-xl font-semibold text-charcoal-900">
         {formatCoupleNames(event.groomName, event.brideName, event.title)}
       </h1>
-      <p className="mt-0.5 text-sm text-stone-400">/{event.slug}</p>
     </header>
   );
 }
