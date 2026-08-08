@@ -1,7 +1,9 @@
 "use client";
 
+import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { logout } from "@/lib/api/dashboard-client";
+import { saveRememberedEmail } from "@/lib/auth/remembered-email";
 import type { AuthUser } from "@/lib/api/types";
 
 type DashboardHeaderProps = {
@@ -11,7 +13,12 @@ type DashboardHeaderProps = {
 export function DashboardHeader({ user }: DashboardHeaderProps) {
   const router = useRouter();
 
+  useEffect(() => {
+    if (user.email) saveRememberedEmail(user.email);
+  }, [user.email]);
+
   const handleLogout = async () => {
+    if (user.email) saveRememberedEmail(user.email);
     try {
       await logout();
     } finally {

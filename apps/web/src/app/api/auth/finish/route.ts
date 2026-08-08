@@ -1,5 +1,8 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { authSuccessHtmlResponse } from "@/lib/server/set-auth-cookies";
+import {
+  applyAuthTokensToResponse,
+  authSuccessHtmlResponse,
+} from "@/lib/server/set-auth-cookies";
 import { getRequestPathUrl } from "@/lib/server/request-origin";
 
 export const dynamic = "force-dynamic";
@@ -25,7 +28,9 @@ export async function GET(request: NextRequest) {
   });
 
   if (upstream.status === 202) {
-    return NextResponse.redirect(getRequestPathUrl(request, "/auth/login"));
+    return NextResponse.redirect(
+      getRequestPathUrl(request, "/auth/login?error=pending"),
+    );
   }
 
   if (!upstream.ok) {
@@ -45,8 +50,21 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  return authSuccessHtmlResponse({
+  const tokens = {
     accessToken: body.accessToken,
     refreshToken: body.refreshToken,
-  });
+  };
+
+  // Explicit HTML handoff (iframe fallback). Default: 303 + Set-Cookie so a
+  // top-level form navigation lands on /dashboard already authenticated.
+  if (request.nextUrl.searchParams.get("ui") === "1") {
+    return authSuccessHtmlResponse(tokens);
+  }
+
+  const response = NextResponse.redirect(
+    getRequestPathUrl(request, "/dashboard"),
+    303,
+  );
+  applyAuthTokensToResponse(response, tokens);
+  return response;
 }

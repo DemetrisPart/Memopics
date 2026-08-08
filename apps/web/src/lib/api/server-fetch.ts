@@ -46,15 +46,23 @@ async function serverApiFetch<T>(
   return (await response.json()) as T;
 }
 
-export async function requireAuth(): Promise<AuthUser> {
+export async function getAuthUserOrNull(): Promise<AuthUser | null> {
   try {
     return await serverApiFetch<AuthUser>("/me");
   } catch (err) {
     if (err instanceof ApiError && err.status === 401) {
-      redirect("/auth/login");
+      return null;
     }
     throw err;
   }
+}
+
+export async function requireAuth(): Promise<AuthUser> {
+  const user = await getAuthUserOrNull();
+  if (!user) {
+    redirect("/auth/login");
+  }
+  return user;
 }
 
 export async function fetchEventsServer(): Promise<CoupleEvent[]> {

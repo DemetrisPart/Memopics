@@ -6,6 +6,10 @@ import type {
   EventStats,
 } from "./types";
 import { ApiError } from "./types";
+import {
+  clearCoupleSessionTokens,
+  coupleAuthHeaders,
+} from "@/lib/auth/couple-session-storage";
 
 function buildApiUrl(path: string): string {
   if (typeof window === "undefined") {
@@ -27,6 +31,7 @@ async function apiFetch<T>(
       credentials: init?.credentials ?? "include",
       headers: {
         "Content-Type": "application/json",
+        ...coupleAuthHeaders(),
         ...init?.headers,
       },
     });
@@ -164,7 +169,11 @@ export async function verifyMagicLink(
 }
 
 export async function logout(): Promise<{ message: string }> {
-  return apiFetch("/auth/logout", { method: "POST" });
+  try {
+    return await apiFetch("/auth/logout", { method: "POST" });
+  } finally {
+    clearCoupleSessionTokens();
+  }
 }
 
 export async function fetchMe(): Promise<AuthUser> {

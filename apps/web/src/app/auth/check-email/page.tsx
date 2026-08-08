@@ -4,6 +4,7 @@ import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { MagicLinkWaiting } from "@/components/auth/magic-link-waiting";
+import { saveRememberedEmail } from "@/lib/auth/remembered-email";
 import { warmupAuthRoutes } from "@/lib/auth/warmup-verify-route";
 
 const VERIFY_STORAGE_KEY = "momeva_verification_token";
@@ -18,6 +19,10 @@ function CheckEmailContent() {
   useEffect(() => {
     void warmupAuthRoutes();
   }, []);
+
+  useEffect(() => {
+    if (email) saveRememberedEmail(email);
+  }, [email]);
 
   useEffect(() => {
     const stored = sessionStorage.getItem(VERIFY_STORAGE_KEY);

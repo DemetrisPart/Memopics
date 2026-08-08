@@ -25,26 +25,59 @@ export function applyAuthTokensToResponse(
 }
 
 /**
- * Sets auth cookies then navigates with a relative URL only.
- * Avoids Safari iOS errors from absolute redirects to localhost/0.0.0.0.
+ * Sets auth cookies then continues to the dashboard.
+ * In Mobile Preview / iframes, Set-Cookie is partitioned or dropped — so we
+ * hand tokens to a top-level /auth/handoff via the URL hash (same idea as the
+ * guest-session iframe fallback from Memopics).
  */
 export function authSuccessHtmlResponse(tokens: {
   accessToken: string;
   refreshToken: string;
 }): NextResponse {
+  const accessJson = JSON.stringify(tokens.accessToken);
+  const refreshJson = JSON.stringify(tokens.refreshToken);
+  const handoffPath = `/auth/handoff#access=${encodeURIComponent(tokens.accessToken)}&refresh=${encodeURIComponent(tokens.refreshToken)}`;
+
   const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>Signing in…</title>
-  <meta http-equiv="refresh" content="0;url=/dashboard"/>
-  <script>window.location.replace("/dashboard")</script>
 </head>
 <body>
   <p style="font-family:system-ui,sans-serif;text-align:center;margin-top:40vh;color:#666">
-    Signing you in… <a href="/dashboard">Continue</a>
+    Signing you in…
+    <a id="continue" href="${handoffPath}" target="_top" rel="noopener">Continue</a>
   </p>
+  <script>
+(function () {
+  var access = ${accessJson};
+  var refresh = ${refreshJson};
+  var handoff = "/auth/handoff#access=" + encodeURIComponent(access) + "&refresh=" + encodeURIComponent(refresh);
+  var inIframe = false;
+  try {
+    inIframe = window.top !== window.self;
+  } catch (e) {
+    inIframe = true;
+  }
+
+  if (inIframe) {
+    // target=_top breaks out of Mobile Preview so cookies are first-party.
+    var link = document.getElementById("continue");
+    if (link) {
+      link.setAttribute("href", handoff);
+      link.click();
+      return;
+    }
+    try { window.top.location.replace(handoff); return; } catch (e) {}
+    window.location.replace(handoff);
+    return;
+  }
+
+  window.location.replace("/dashboard");
+})();
+  </script>
 </body>
 </html>`;
 

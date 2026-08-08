@@ -96,7 +96,7 @@ export class AuthService {
 
   async getMagicLinkPollStatus(
     pollToken: string,
-  ): Promise<"pending" | "approved" | "expired"> {
+  ): Promise<"pending" | "approved" | "completed" | "expired"> {
     const pollHash = hashToken(pollToken);
     const record = await this.prisma.magicLinkToken.findFirst({
       where: { pollTokenHash: pollHash },
@@ -106,7 +106,12 @@ export class AuthService {
       return "expired";
     }
 
-    if (record.usedAt || record.expiresAt <= new Date()) {
+    // Sign-in already finished — waiting tab should go to dashboard, not error.
+    if (record.usedAt) {
+      return "completed";
+    }
+
+    if (record.expiresAt <= new Date()) {
       return "expired";
     }
 
@@ -122,15 +127,28 @@ export class AuthService {
   ): Promise<(AuthTokens & { userId: string }) | "pending"> {
     const pollHash = hashToken(pollToken);
     const record = await this.prisma.magicLinkToken.findFirst({
-      where: {
-        pollTokenHash: pollHash,
-        usedAt: null,
-        expiresAt: { gt: new Date() },
-      },
+      where: { pollTokenHash: pollHash },
       include: { user: true },
     });
 
     if (!record || record.user.deletedAt) {
+      throw new UnauthorizedException("Invalid or expired sign-in request");
+    }
+
+    // Already consumed (double finish / React Strict Mode) — re-issue session.
+    if (record.usedAt) {
+      const reusedWithinMs = Date.now() - record.usedAt.getTime();
+      if (reusedWithinMs > 2 * 60 * 1000) {
+        throw new UnauthorizedException("Invalid or expired sign-in request");
+      }
+      return this.issueSession(
+        record.user.id,
+        record.user.email,
+        record.user.role,
+      );
+    }
+
+    if (record.expiresAt <= new Date()) {
       throw new UnauthorizedException("Invalid or expired sign-in request");
     }
 
